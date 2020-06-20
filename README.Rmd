@@ -13,8 +13,6 @@ Let first install package <code>rplam</code>.
 library(devtools)
 install_github("alemermartinez/rplam")
 library(rplam)
-library(MASS)
-library(splines)
 ```
 
 The following is a real-data example of the implemention of the robust estimator based on B-splines under a partial linear additive model.

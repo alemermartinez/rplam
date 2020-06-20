@@ -1,4 +1,5 @@
 
+#' @export
 tukey.loss <- function(x,k=4.685){
   n <- length(x)
   salida <- rep(0,n)
@@ -11,6 +12,7 @@ tukey.loss <- function(x,k=4.685){
 
 #Knot selection
 #' @importFrom splines bs
+#' @export
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
@@ -77,6 +79,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
 
 #' @importFrom splines bs
+#' @export
 select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
   n <- length(y)
