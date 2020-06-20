@@ -9,23 +9,13 @@ library(rplam)
 The following is a real-data example of the implemention of the robust estimator based on B-splines under a partial linear additive model.
 
 ``` r
-attach(airquality)
-aux <- !is.na(Solar.R)
-y <- Ozone[aux]
-x1 <- Temp[aux]
-x2 <- Wind[aux]
-x3 <- Solar.R[aux]
-z <- Month[aux]
-
-na.y <- !is.na(y)
-y <- y[na.y]
-x1 <- x1[na.y]
-x2 <- x2[na.y]
-x3 <- x3[na.y]
-z <- z[na.y]
-
-X <- cbind(x1,x2,x3)
-Z <- as.matrix(z)
+data(airquality)
+x <- airquality
+x <- x[ complete.cases(x), ]
+x <- x[, c('Ozone', 'Solar.R', 'Wind', 'Temp','Month')]
+y <- as.vector(x$Ozone)
+X <- as.matrix(x[, c('Solar.R', 'Wind', 'Temp')])
+Z <- as.matrix(x[, 'Month'])
 ```
 
 As the is taken as a categorical variable, we convert it into a factor variable.
