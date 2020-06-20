@@ -3,4 +3,6 @@
 export(select.nknots.cl)
 export(select.nknots.rob)
 export(tukey.loss)
+importFrom(MASS,rlm)
 importFrom(splines,bs)
+importFrom(stats,lm)
