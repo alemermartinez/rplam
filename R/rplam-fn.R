@@ -13,10 +13,20 @@ tukey.loss <- function(x,k=4.685){
 
 #Knot selection
 
-select.nknots.cl <- function(y=y,covariate=X,factor=Z,degree.spline=3){
+select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
-  q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
 
   lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
   lim.sup.kj <- floor(8+2*n^(1/5))
@@ -42,18 +52,7 @@ select.nknots.cl <- function(y=y,covariate=X,factor=Z,degree.spline=3){
     }
     nMat <- dim(Mat.X[[ell]])[2]
 
-    Z.f <- as.factor(Z)
-    lev.Z <- levels(Z.f)
-    dummies <- matrix(0,n,nlevels(Z.f)-1)
-    for(k in 1:(nlevels(Z.f)-1)){
-      dummies[,k] <- as.numeric(Z.f == lev.Z[k+1])
-    }
-
-
-    #--- Classical estimator ---#
-
-    #sal <- lm(y~Z.f+Mat.Slp.T1+Mat.Slp.T2+Mat.Slp.T3)
-    sal <- lm(y~dummies+Xspline)
+    sal <- lm(y~Z.aux+Xspline)
     betas <- as.vector(sal$coefficients)
     beta.hat <- betas[-1]
     coef.lin <- betas[2:(q+1)]
@@ -80,10 +79,23 @@ select.nknots.cl <- function(y=y,covariate=X,factor=Z,degree.spline=3){
 
 
 
-select.nknots.rob <- function(y=y,covariate=X,factor=Z,degree.spline=3,seed=26){
+select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
+
   n <- length(y)
   d <- dim(X)[2]
-  q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
+
 
   lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
   lim.sup.kj <- floor(8+2*n^(1/5))
@@ -91,7 +103,7 @@ select.nknots.rob <- function(y=y,covariate=X,factor=Z,degree.spline=3,seed=26){
   lim.inf.nknots <- lim.inf.kj - degree.spline - 1
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
 
-  BIC <- rep(0,length(grid.nknots))
+  RBIC <- rep(0,length(grid.nknots))
 
   for(nknots in grid.nknots){
     Mat.X <- as.list(rep(0,d))
@@ -109,16 +121,11 @@ select.nknots.rob <- function(y=y,covariate=X,factor=Z,degree.spline=3,seed=26){
     }
     nMat <- dim(Mat.X[[ell]])[2]
 
-    Z.f <- as.factor(Z)
-    lev.Z <- levels(Z.f)
-    dummies <- matrix(0,n,nlevels(Z.f)-1)
-    for(k in 1:(nlevels(Z.f)-1)){
-      dummies[,k] <- as.numeric(Z.f == lev.Z[k+1])
-    }
+
 
     #- Tukey MM estimator -#
     set.seed(seed)
-    sal.r <- rlm(y~Z.f+Xspline ,method="MM",maxit=100)
+    sal.r <- rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
 
     betas <- as.vector(sal.r$coefficients)
     beta.hat <- betas[-1]
@@ -142,7 +149,9 @@ select.nknots.rob <- function(y=y,covariate=X,factor=Z,degree.spline=3,seed=26){
   posicion <- which.min(RBIC)
   nknots <- posicion-1
 
-  salida <- list(nknots=nknots, RBIC=BIC, grid.nknots=grid.nknots)
+  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots)
   return(salida)
 }
+
+#rplam.cl(y,cov=X,factor=)
 
