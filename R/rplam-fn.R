@@ -12,6 +12,7 @@ tukey.loss <- function(x,k=4.685){
 
 #Knot selection
 #' @importFrom splines bs
+#' @importFrom MASS lm
 #' @export
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
@@ -79,6 +80,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
 
 #' @importFrom splines bs
+#' @importFrom MASS rlm
 #' @export
 select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
