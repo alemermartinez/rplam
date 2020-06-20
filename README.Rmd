@@ -7,25 +7,20 @@ output:
     variant: markdown_github
 ---
 
-Let first install package rplam.
+Let first install package <code>rplam</code>.
 
 ```{r installation, results='hide', cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, message=FALSE}
+library(devtools)
+install_github("alemermartinez/rplam")
 library(rplam)
+library(MASS)
+library(splines)
 ```
 
 The following is a real-data example of the implemention of the robust estimator based on B-splines under a partial linear additive model.
 
 ```{r loading data}
 attach(airquality)
-sum(is.na(Ozone))
-length(Ozone)
-names(airquality)
-sum(is.na(Solar.R))
-sum(is.na(Wind))
-sum(is.na(Temp))
-sum(is.na(Month))
-sum(is.na(Day))
-
 aux <- !is.na(Solar.R)
 y <- Ozone[aux]
 x1 <- Temp[aux]

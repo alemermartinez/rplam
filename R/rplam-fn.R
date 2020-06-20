@@ -1,5 +1,3 @@
-library(MASS)
-library(splines)
 
 tukey.loss <- function(x,k=4.685){
   n <- length(x)
@@ -12,7 +10,7 @@ tukey.loss <- function(x,k=4.685){
 }
 
 #Knot selection
-
+#' @importFrom splines bs
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
@@ -46,7 +44,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
       }else{
         knots <- NULL
       }
-      Mat.X[[ell]] <- bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
       Xspline <- cbind(Xspline,Mat.X[[ell]])
     }
@@ -78,7 +76,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 }
 
 
-
+#' @importFrom splines bs
 select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
   n <- length(y)
@@ -115,7 +113,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
       }else{
         knots <- NULL
       }
-      Mat.X[[ell]] <- bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
       Xspline <- cbind(Xspline,Mat.X[[ell]])
     }
