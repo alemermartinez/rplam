@@ -47,3 +47,17 @@ sal.rob$nknots
 ```
 
     ## [1] 9
+
+Classical estimation of a partial linear additive model
+
+``` r
+sal.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
+```
+
+and the robust proposal
+
+``` r
+sal.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
+```
+
+When no number of internal knots is specified, select.knots.cl or select.knots.rob, respectively, is used.

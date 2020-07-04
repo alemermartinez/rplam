@@ -210,13 +210,16 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   alpha.hat <- betas[1]
 
   gs.hat <- matrix(0,n,d)
+  correc <- rep(0,d)
   for(ell in 1:d){
     aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+    correc[ell] <- mean(aux)
     gs.hat[,ell] <- aux - mean(aux)
   }
 
   regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat, g.matrix=gs.hat, coef.spl, nknots=nknots, knots=knots)
+
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat)
   return(salida)
 }
 
@@ -267,6 +270,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
+  set.seed(seed)
   sal <- rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
   betas <- as.vector(sal$coefficients)
   beta.hat <- betas[-1]
@@ -275,13 +279,15 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   alpha.hat <- betas[1]
 
   gs.hat <- matrix(0,n,d)
+  correc <- rep(0,d)
   for(ell in 1:d){
     aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+    correc[ell] <- mean(aux)
     gs.hat[,ell] <- aux - mean(aux)
   }
 
   regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat, g.matrix=gs.hat, coef.spl, nknots=nknots, knots=knots)
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat)
   return(salida)
 }
 

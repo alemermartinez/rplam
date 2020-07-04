@@ -41,26 +41,37 @@ degree.spline <- 3
 
 The number of internal knots selected by the BIC criteria for the classical estimator is 9.
 ```{r number of knots classical}
-sal <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)
-sal$nknots
+nk.cl <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)
+nk.cl$nknots
 ```
 And so is the number of internal knots selected using the RBIC criteria used for the robust proposal.
 ```{r number of knots robust}
-sal.rob <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
-sal.rob$nknots
+nk.rob <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
+nk.rob$nknots
 ```
 
 Classical estimation of a partial linear additive model
 ```{r plam.cl}
-sal.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
+fit.full.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
 ```
 and the robust proposal
 ```{r plam.rob}
-sal.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
+fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 ```
 When no number of internal knots is specified, select.knots.cl or select.knots.rob, respectively, is used.
 
-
+```{r plot cla}
+lim.cl <- lim.rob <- matrix(0, 2, 3)
+x0 <- fit.full.cl$X
+for(j in 1:3) {
+  re <- fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-j])
+  lim.cl[,j] <- c(min(re), max(re))
+  plot(re ~ x0[,j], type='p', pch=19, col='gray30', 
+       xlab=colnames(x0)[j], ylab='', cex=1.5)
+  oo <- order(x0[,j])
+  lines(x0[oo,j], fit.full.cl$g.matrix[oo,j], lwd=5, col='red')
+}
+```
 
 
 
