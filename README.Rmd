@@ -126,8 +126,17 @@ p2 <- ggplot(DF3,aes(x=Position,y=Residuals))+
   geom_abline(intercept = 0,slope=0)+
   theme(
     axis.title.x=element_blank(),
+    axis.title.y=element_blank(),
     axis.text.x=element_blank()
   )
 
-plot_grid(p1, p2)
+p3 <- ggplot(DF3,aes(sample=Residuals))+
+  geom_qq()+stat_qq_line()+
+  theme(
+    axis.title.x=element_blank(),
+    axis.title.y=element_blank(),
+    axis.text.x=element_blank()
+  )
+
+plot_grid(p1, p2, p3)
 ```
