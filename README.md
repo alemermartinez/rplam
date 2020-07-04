@@ -86,4 +86,15 @@ summary(res.rob)
 
     ## ********************************************************
 
-![](README_files/figure-markdown_github/residuals%20plots-1.png)
+![](README_files/figure-markdown_github/residuals%20plots-1.png) The residuals detected as outliers are:
+
+``` r
+p1.info$outliers
+```
+
+    ## [[1]]
+    ## [1]  54.69827  70.38513  52.77027 103.61697
+
+which correspond to observations 23, 34, 53 and 77.
+
+Now, we remove these four observations from the original data set and re-calculate the classical estimator.

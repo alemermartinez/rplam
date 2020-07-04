@@ -122,7 +122,7 @@ p1 <- ggplot(DF3,aes(y=Residuals))+
   )
 
 p2 <- ggplot(DF3,aes(x=Position,y=Residuals))+
-  geom_point(alpha=0.5,color="#0052bb")+
+  geom_point(alpha=0.8,color="#0052bb")+
   geom_abline(intercept = 0,slope=0)+
   theme(
     axis.title.x=element_blank(),
@@ -131,12 +131,21 @@ p2 <- ggplot(DF3,aes(x=Position,y=Residuals))+
   )
 
 p3 <- ggplot(DF3,aes(sample=Residuals))+
-  geom_qq()+stat_qq_line()+
+  geom_qq(color="#0052bb",alpha=0.8)+stat_qq_line()+
   theme(
     axis.title.x=element_blank(),
-    axis.title.y=element_blank(),
     axis.text.x=element_blank()
   )
 
 plot_grid(p1, p2, p3)
 ```
+The residuals detected as outliers are:
+```{r boxplot info, echo=FALSE,warning=FALSE}
+p1.info <- ggplot_build(p1)$data[[1]]
+```
+```{r outliers}
+p1.info$outliers
+```
+which correspond to observations 23, 34, 53 and 77. 
+
+Now, we remove these four observations from the original data set and re-calculate the classical estimator.
