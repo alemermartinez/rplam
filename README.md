@@ -99,3 +99,61 @@ for(j in 1:3) {
 ```
 
 ![](README_files/figure-markdown_github/plot%20both-1.png)
+
+``` r
+DF <- as.data.frame(cbind(
+  X,
+  fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-1]),
+  fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-2]),
+  fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-3]),
+  fit.full.cl$g.matrix,
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1]),
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-2]),
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3]),
+  fit.rob$g.matrix
+))
+names(DF) <- c("x1","x2","x3","re.cl.1", "re.cl.2", "re.cl.3", "cl.1", "cl.2", "cl.3", "re.rob.1", "re.rob.2", "re.rob.3", "rob.1", "rob.2", "rob.3")
+
+library(ggplot2)
+```
+
+    ## Warning: package 'ggplot2' was built under R version 3.6.3
+
+``` r
+ggplot(DF,aes(x=x1,y=re.cl.1)) +
+  geom_point(alpha=0.5,col='red')+
+  geom_line(data=DF,aes(x=x1,y=cl.1),col='red',size=2)+
+  geom_point(aes(x=x1,y=re.rob.1),col='blue',alpha=0.5)+
+  geom_line(data=DF,aes(x=x1,y=rob.1),col='blue',size=2)+
+  theme(
+    axis.title.y=element_blank()
+    )
+```
+
+![](README_files/figure-markdown_github/ggplot-1.png)
+
+``` r
+ggplot(DF,aes(x=x2,y=re.cl.2)) +
+  geom_point(alpha=0.5,col='red')+
+  geom_line(data=DF,aes(x=x2,y=cl.2),col='red',size=2)+
+  geom_point(aes(x=x2,y=re.rob.2),col='blue',alpha=0.5)+
+  geom_line(data=DF,aes(x=x2,y=rob.2),col='blue',size=2)+
+  theme(
+    axis.title.y=element_blank()
+  )
+```
+
+![](README_files/figure-markdown_github/ggplot-2.png)
+
+``` r
+ggplot(DF,aes(x=x3,y=re.cl.3)) +
+  geom_point(alpha=0.5,col='red')+
+  geom_line(data=DF,aes(x=x3,y=cl.3),col='red',size=2)+
+  geom_point(aes(x=x3,y=re.rob.3),col='blue',alpha=0.5)+
+  geom_line(data=DF,aes(x=x3,y=rob.3),col='blue',size=2)+
+  theme(
+    axis.title.y=element_blank()
+  )
+```
+
+![](README_files/figure-markdown_github/ggplot-3.png)
