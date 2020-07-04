@@ -70,9 +70,7 @@ DF2 <- as.data.frame(list(
   rbind(fit.full.cl$g.matrix,fit.rob$g.matrix),
   c(rep("Classical",111),rep("Robust",111))
 ))
-dim(DF2)
 names(DF2) <- c("x1","x2","x3","re.1", "re.2", "re.3", "g1","g2","g3","Fit")
-str(DF2)
 
 library(ggplot2)
 ggplot(DF2,aes(x=x1,y=re.1,color=Fit)) +
@@ -103,3 +101,33 @@ ggplot(DF2,aes(x=x3,y=re.3,color=Fit)) +
 
 ```
 
+Since fits are not quite similar, we are going to study the residuals obtained by the robust estimator.
+```{r residuals}
+res.rob <- y-fit.rob$prediction
+summary(res.rob)
+```
+
+```{r residuals plots, echo=FALSE,warning=FALSE}
+DF3 <- as.data.frame(list(
+  1:111,
+  y-fit.rob$prediction
+))
+names(DF3) <- c("Position","Residuals")
+
+library(cowplot)
+p1 <- ggplot(DF3,aes(y=Residuals))+
+  geom_boxplot(fill='#0052bb',alpha=0.5)+
+  theme(
+    axis.text.x=element_blank()
+  )
+
+p2 <- ggplot(DF3,aes(x=Position,y=Residuals))+
+  geom_point(alpha=0.5,color="#0052bb")+
+  geom_abline(intercept = 0,slope=0)+
+  theme(
+    axis.title.x=element_blank(),
+    axis.text.x=element_blank()
+  )
+
+plot_grid(p1, p2)
+```

@@ -62,20 +62,28 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 
 When no number of internal knots is specified, select.knots.cl or select.knots.rob, respectively, is used.
 
-The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals.
+The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
 
-    ## [1] 222  10
+Since fits are not quite similar, we are going to study the residuals obtained by the robust estimator.
 
-    ## 'data.frame':    222 obs. of  10 variables:
-    ##  $ x1  : num  190 118 149 313 299 99 19 256 290 274 ...
-    ##  $ x2  : num  7.4 8 12.6 11.5 8.6 13.8 20.1 9.7 9.2 10.9 ...
-    ##  $ x3  : num  67 72 74 62 65 59 61 69 66 68 ...
-    ##  $ re.1: num  1.462 0.827 -2.498 -5.139 -11.741 ...
-    ##  $ re.2: num  12.15 -3.86 -21.69 -13.82 -11.35 ...
-    ##  $ re.3: num  -8.2 -14.4 -24.1 -22.6 -23.2 ...
-    ##  $ g1  : num  -5.358 2.9541 3.0449 0.0282 -1.696 ...
-    ##  $ g2  : num  5.33 -1.74 -16.15 -8.66 -1.31 ...
-    ##  $ g3  : num  -15 -12.3 -18.6 -17.4 -13.2 ...
-    ##  $ Fit : Factor w/ 2 levels "Classical","Robust": 1 1 1 1 1 1 1 1 1 1 ...
+``` r
+res.rob <- y-fit.rob$prediction
+summary(res.rob)
+```
 
-![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ## -21.7551  -6.2581  -0.2832   2.6631   7.6366 103.6170
+
+    ## 
+    ## ********************************************************
+
+    ## Note: As of version 1.0.0, cowplot does not change the
+
+    ##   default ggplot2 theme anymore. To recover the previous
+
+    ##   behavior, execute:
+    ##   theme_set(theme_cowplot())
+
+    ## ********************************************************
+
+![](README_files/figure-markdown_github/residuals%20plots-1.png)
