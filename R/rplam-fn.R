@@ -156,5 +156,135 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
   return(salida)
 }
 
-#rplam.cl(y,cov=X,factor=)
+#Classical Partial Linear Additive Model
+#' @importFrom splines bs
+#' @importFrom stats lm
+#' @export
+plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
+  # y continuos response variable (n)
+  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
+  # In case it is a cathegorical variable, class of Z should be 'factor'.
+  # X a vector (n) or a matrix (n x d) for the additive part.
+  # nknots number of internal knots
+  # knots specific internal knots
+
+  n <- length(y)
+  d <- dim(X)[2]
+
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
+
+  if( is.null(nknots) ){
+    nknots <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)$nknots
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+  Xspline <- NULL
+  for (ell in 1:d){
+    if(nknots>0){
+      knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+    }else{
+      knots <- NULL
+    }
+    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+  }
+  nMat <- dim(Mat.X[[ell]])[2]
+
+  sal <- lm(y~Z.aux+Xspline)
+  betas <- as.vector(sal$coefficients)
+  beta.hat <- betas[-1]
+  coef.lin <- betas[2:(q+1)]
+  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  alpha.hat <- betas[1]
+
+  gs.hat <- matrix(0,n,d)
+  for(ell in 1:d){
+    aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+    gs.hat[,ell] <- aux - mean(aux)
+  }
+
+  regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat, g.matrix=gs.hat, coef.spl, nknots=nknots, knots=knots)
+  return(salida)
+}
+
+
+#Robust Partial Linear Additive Model
+#' @importFrom splines bs
+#' @importFrom stats lm
+#' @export
+plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26){
+  # y continuos response variable (n)
+  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
+  # In case it is a cathegorical variable, class of Z should be 'factor'.
+  # X a vector (n) or a matrix (n x d) for the additive part.
+  # nknots number of internal knots
+  # knots specific internal knots
+
+  n <- length(y)
+  d <- dim(X)[2]
+
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
+
+  if( is.null(nknots) ){
+    nknots <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)$nknots
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+  Xspline <- NULL
+  for (ell in 1:d){
+    if(nknots>0){
+      knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+    }else{
+      knots <- NULL
+    }
+    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+  }
+  nMat <- dim(Mat.X[[ell]])[2]
+
+  sal <- rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
+  betas <- as.vector(sal$coefficients)
+  beta.hat <- betas[-1]
+  coef.lin <- betas[2:(q+1)]
+  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  alpha.hat <- betas[1]
+
+  gs.hat <- matrix(0,n,d)
+  for(ell in 1:d){
+    aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+    gs.hat[,ell] <- aux - mean(aux)
+  }
+
+  regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat, g.matrix=gs.hat, coef.spl, nknots=nknots, knots=knots)
+  return(salida)
+}
+
+
+
 
