@@ -62,10 +62,4 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 
 When no number of internal knots is specified, select.knots.cl or select.knots.rob, respectively, is used.
 
-![](README_files/figure-markdown_github/plot%20cla-1.png)
-
-![](README_files/figure-markdown_github/plot%20both-1.png)
-
-    ## Warning: package 'ggplot2' was built under R version 3.6.3
-
-![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
+The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
