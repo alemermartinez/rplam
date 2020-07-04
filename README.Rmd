@@ -63,6 +63,7 @@ When no number of internal knots is specified, select.knots.cl or select.knots.r
 ```{r plot cla}
 lim.cl <- lim.rob <- matrix(0, 2, 3)
 x0 <- fit.full.cl$X
+par(mfrow=c(1,3))
 for(j in 1:3) {
   re <- fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-j])
   lim.cl[,j] <- c(min(re), max(re))
