@@ -77,3 +77,25 @@ for(j in 1:3) {
 ```
 
 ![](README_files/figure-markdown_github/plot%20cla-1.png)
+
+``` r
+par(mfrow=c(3,3))
+for(j in 1:3) {
+  re.cl <- fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-j])
+  lim.cl[,j] <- c(min(re), max(re))
+  re.rob <- fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-j])
+  lim.rob[,j] <- c(min(re), max(re))
+  plot(re ~ x0[,j], type='p', pch=19, col='gray30', 
+       xlab=colnames(x0)[j], ylab='', cex=1.5, ylim=lim.cl[,j])
+  oo <- order(x0[,j])
+  lines(x0[oo,j], fit.full.cl$g.matrix[oo,j], lwd=5, col='red')
+  plot(re.rob ~ x0[,j], type='p', pch=19, col='gray30', 
+       xlab=colnames(x0)[j], ylab='', cex=1.5,ylim=lim.rob[,j])
+  oo <- order(x0[,j])
+  lines(x0[oo,j], fit.rob$g.matrix[oo,j], lwd=5, col='blue')
+  plot(x0[oo,j],fit.full.cl$g.matrix[oo,j], ylab="",type="l", col='red', ylim=c(min(lim.cl[1,j],lim.rob[1,j]),max(lim.cl[2,j],lim.rob[2,j])), lwd=5)
+  lines(x0[oo,j],fit.rob$g.matrix[oo,j],col='blue',lwd=5)
+}
+```
+
+![](README_files/figure-markdown_github/plot%20both-1.png)
