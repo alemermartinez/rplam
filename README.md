@@ -86,15 +86,34 @@ summary(res.rob)
 
     ## ********************************************************
 
-![](README_files/figure-markdown_github/residuals%20plots-1.png) The residuals detected as outliers are:
+![](README_files/figure-markdown_github/residuals%20plots-1.png)
+
+The residuals detected as outliers are:
 
 ``` r
-p1.info$outliers
+p1.info$outliers[[1]]
 ```
 
-    ## [[1]]
     ## [1]  54.69827  70.38513  52.77027 103.61697
 
-which correspond to observations 23, 34, 53 and 77.
+which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
+
+    ## [1] 111  10
+
+    ## 'data.frame':    111 obs. of  10 variables:
+    ##  $ Temp   : num  190 118 149 313 299 99 19 256 290 274 ...
+    ##  $ Wind   : num  7.4 8 12.6 11.5 8.6 13.8 20.1 9.7 9.2 10.9 ...
+    ##  $ Solar.R: num  67 72 74 62 65 59 61 69 66 68 ...
+    ##  $ re.1   : num  7.299 11.926 0.891 -3.972 -8.195 ...
+    ##  $ re.2   : num  9.29 3.39 -18.36 -9.08 -10.12 ...
+    ##  $ re.3   : num  -4.77 -8.03 -23.48 -21.53 -17.88 ...
+    ##  $ g1     : num  0.5761 4.9682 6.051 1.0017 0.0892 ...
+    ##  $ g2     : num  2.56 -3.57 -13.2 -4.1 -1.83 ...
+    ##  $ g3     : num  -11.5 -15 -18.3 -16.6 -9.6 ...
+    ##  $ Fit    : Factor w/ 1 level "Robust": 1 1 1 1 1 1 1 1 1 1 ...
+
+    ## [1] 4 6
+
+![](README_files/figure-markdown_github/ggplot%20highlighted-1.png)![](README_files/figure-markdown_github/ggplot%20highlighted-2.png)![](README_files/figure-markdown_github/ggplot%20highlighted-3.png)
 
 Now, we remove these four observations from the original data set and re-calculate the classical estimator.
