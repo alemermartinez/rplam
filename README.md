@@ -1,3 +1,5 @@
+The following real data example of the implementation of robust estimators based on B-splines under partially linear additive model is part of a work in progress done in collaboration with Prof. Dr. Graciela Boente.
+
 Let first install package <code>rplam</code>.
 
 ``` r
@@ -6,7 +8,7 @@ install_github("alemermartinez/rplam")
 library(rplam)
 ```
 
-The following is a real-data example of the implemention of the robust estimator based on B-splines under a partial linear additive model.
+We will use the Air Quality data set available in <code>R</code>.
 
 ``` r
 data(airquality)
@@ -48,7 +50,7 @@ nk.rob$nknots
 
     ## [1] 9
 
-Classical estimation of a partial linear additive model
+Classical estimation of a partially linear additive model
 
 ``` r
 fit.full.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
@@ -62,9 +64,9 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 
 When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
-The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
+The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
 
-Since fits are not quite similar, we are going to study the residuals obtained by the robust estimator.
+It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
 
 ``` r
 res.rob <- y-fit.rob$prediction

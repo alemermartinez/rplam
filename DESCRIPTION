@@ -1,6 +1,6 @@
 Package: rplam
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Robust estimators for Partially Linear Additive Models
 Version: 0.1.0
 Author: c(person("Alejandra", "Martinez", role=c("cre"), email="ale_m_martinez@hotmail.com"))
 Maintainer: The package maintainer <ale_m_martinez@hotmail.com>

@@ -7,6 +7,8 @@ output:
     variant: markdown_github
 ---
 
+The following real data example of the implementation of robust estimators based on B-splines under partially linear additive model is part of a work in progress done in collaboration with Prof. Dr. Graciela Boente.
+
 Let first install package <code>rplam</code>.
 
 ```{r installation, results='hide', cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, message=FALSE}
@@ -15,10 +17,8 @@ install_github("alemermartinez/rplam")
 library(rplam)
 ```
 
-The following is a real-data example of the implemention of the robust estimator based on B-splines under a partial linear additive model.
-
+We will use the Air Quality data set available in <code>R</code>.
 ```{r loading data}
-
 data(airquality)
 x <- airquality
 x <- x[ complete.cases(x), ]
@@ -50,7 +50,7 @@ nk.rob <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
 nk.rob$nknots
 ```
 
-Classical estimation of a partial linear additive model
+Classical estimation of a partially linear additive model
 ```{r plam.cl}
 fit.full.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
 ```
@@ -60,7 +60,7 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 ```
 When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
-The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals.
+The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals.
 ```{r ggplot, echo=FALSE,warning=FALSE}
 DF2 <- as.data.frame(list(
   rbind(X,X),
@@ -101,7 +101,7 @@ ggplot(DF2,aes(x=Solar.R,y=re.S,color=Fit)) +
 
 ```
 
-Since fits are not quite similar, we are going to study the residuals obtained by the robust estimator.
+It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
 ```{r residuals}
 res.rob <- y-fit.rob$prediction
 summary(res.rob)
