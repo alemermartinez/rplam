@@ -58,7 +58,7 @@ and the robust proposal
 ```{r plam.rob}
 fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 ```
-When no number of internal knots is specified, select.knots.cl or select.knots.rob, respectively, is used.
+When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
 The following three plots correspond to the classical (in red) and robust (in blue) fits for the additive functions with their respectively partial residuals.
 ```{r ggplot, echo=FALSE,warning=FALSE}
@@ -70,30 +70,30 @@ DF2 <- as.data.frame(list(
   rbind(fit.full.cl$g.matrix,fit.rob$g.matrix),
   c(rep("Classical",111),rep("Robust",111))
 ))
-names(DF2) <- c("Temp","Wind","Solar.R","re.1", "re.2", "re.3", "g1","g2","g3","Fit")
+names(DF2) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
 
 library(ggplot2)
-ggplot(DF2,aes(x=Temp,y=re.1,color=Fit)) +
+ggplot(DF2,aes(x=Temp,y=re.T,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=g1),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
+  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
   theme(
     axis.title.y=element_blank()
   )
 
 
-ggplot(DF2,aes(x=Wind,y=re.2,color=Fit)) +
+ggplot(DF2,aes(x=Wind,y=re.W,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=g2),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
+  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
   theme(
     axis.title.y=element_blank()
   )
 
 
-ggplot(DF2,aes(x=Solar.R,y=re.3,color=Fit)) +
+ggplot(DF2,aes(x=Solar.R,y=re.S,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=g3),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
+  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
   theme(
     axis.title.y=element_blank()
@@ -157,8 +157,7 @@ DF3 <- as.data.frame(list(
   rbind(fit.rob$g.matrix),
   rep("Robust",111)
 ))
-dim(DF3)
-names(DF3) <- c("Temp","Wind","Solar.R","re.1", "re.2", "re.3", "g1","g2","g3","Fit")
+names(DF3) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
 
 DF3point <- as.data.frame(list(
   X[c(23,34,53,77),],
@@ -167,32 +166,31 @@ DF3point <- as.data.frame(list(
   (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3]))[c(23,34,53,77),]
 )
 )
-dim(DF3point)
-names(DF3point) <- c("x1","x2","x3","re1","re2","re3")
+names(DF3point) <- c("Solar.x","Wind.x","Temp.x","re.Solar","re.Wind","re.Temp")
 
-ggplot(DF3,aes(x=Temp,y=re.1,color=Fit)) +
+ggplot(DF3,aes(x=Temp,y=re.T,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=g1),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(1,111)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=x1,y=re1),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Temp.x,y=re.Temp),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF3,aes(x=Wind,y=re.2,color=Fit)) +
+ggplot(DF3,aes(x=Wind,y=re.W,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=g2),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(1,111)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=x2,y=re2),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Wind.x,y=re.Wind),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF3,aes(x=Solar.R,y=re.3,color=Fit)) +
+ggplot(DF3,aes(x=Solar.R,y=re.S,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=g3),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(1,111)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=x3,y=re3),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Solar.x,y=re.Solar),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
@@ -219,33 +217,31 @@ DF4 <- as.data.frame(list(
   rbind(fit.del.cl$g.matrix,fit.rob$g.matrix),
   c(rep("Classical",107),rep("Robust",111))
 ))
-dim(DF4)
-names(DF4) <- c("Temp","Wind","Solar.R","re.1", "re.2", "re.3", "g1","g2","g3","Fit")
-str(DF4)
+names(DF4) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
 
-ggplot(DF4,aes(x=Temp,y=re.1,color=Fit)) +
+ggplot(DF4,aes(x=Temp,y=re.T,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=g1),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=x1,y=re1),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Temp.x,y=re.Temp),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF4,aes(x=Wind,y=re.2,color=Fit)) +
+ggplot(DF4,aes(x=Wind,y=re.W,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=g2),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=x2,y=re2),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Wind.x,y=re.Wind),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF4,aes(x=Solar.R,y=re.3,color=Fit)) +
+ggplot(DF4,aes(x=Solar.R,y=re.S,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=g3),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=x3,y=re3),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=Solar.x,y=re.Solar),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
