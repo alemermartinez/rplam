@@ -17,6 +17,7 @@ tukey.loss <- function(x,k=4.685){
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
+
   if(is.factor(Z)){
     q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
     lev.Z <- levels(Z)
