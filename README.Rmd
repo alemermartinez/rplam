@@ -107,6 +107,9 @@ res.rob <- y-fit.rob$prediction
 summary(res.rob)
 ```
 
+```{r cowplot, echo=FALSE, warning=FALSE}
+library(cowplot)
+```
 ```{r residuals plots, echo=FALSE,warning=FALSE}
 DF3 <- as.data.frame(list(
   1:111,
@@ -114,7 +117,6 @@ DF3 <- as.data.frame(list(
 ))
 names(DF3) <- c("Position","Residuals")
 
-library(cowplot)
 p1 <- ggplot(DF3,aes(y=Residuals))+
   geom_boxplot(fill='#0052bb',alpha=0.5)+
   theme(
