@@ -1,12 +1,12 @@
 Package: rplam
 Type: Package
 Title: Robust estimators for Partially Linear Additive Models
-Version: 0.1.0
+Version: 0.0.1
 Author: c(person("Alejandra", "Martinez", role=c("cre"), email="ale_m_martinez@hotmail.com"))
 Maintainer: The package maintainer <ale_m_martinez@hotmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: GPL (>=3.0)
+License: GPL-3 + file LICENSE
 Imports: MASS, splines, stats
 Encoding: UTF-8
 LazyData: true
