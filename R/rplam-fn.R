@@ -220,7 +220,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 
   regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat)
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
   return(salida)
 }
 
@@ -288,7 +288,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   }
 
   regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat)
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
   return(salida)
 }
 
