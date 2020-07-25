@@ -66,7 +66,7 @@ When no number of internal knots is specified, functions select.knots.cl or sele
 
 The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
 
-|                 |        col2|         col3|
+|                 |   Classical|       Robust|
 |-----------------|-----------:|------------:|
 | *β*<sub>0</sub> |   49.230699|   42.6283885|
 | *β*<sub>1</sub> |  -13.088702|  -12.8228650|
@@ -123,12 +123,12 @@ fit.del.cl <- plam.cl(y.del, Z.del, X.del)
 
 New estimated linear coefficients with the previuos ones are shown in the following table.
 
-|                 |        col2|         col3|        col4|
-|-----------------|-----------:|------------:|-----------:|
-| *β*<sub>0</sub> |   49.230699|   42.6283885|   39.948805|
-| *β*<sub>1</sub> |  -13.088702|  -12.8228650|  -10.964194|
-| *β*<sub>2</sub> |   -4.768714|   -0.2128605|    3.167666|
-| *β*<sub>3</sub> |   -2.936557|    1.5242527|    4.489971|
-| *β*<sub>4</sub> |  -16.630411|   -9.2577636|   -7.022334|
+|                 |   Classical|       Robust|  Classical on clean data|
+|-----------------|-----------:|------------:|------------------------:|
+| *β*<sub>0</sub> |   49.230699|   42.6283885|                39.948805|
+| *β*<sub>1</sub> |  -13.088702|  -12.8228650|               -10.964194|
+| *β*<sub>2</sub> |   -4.768714|   -0.2128605|                 3.167666|
+| *β*<sub>3</sub> |   -2.936557|    1.5242527|                 4.489971|
+| *β*<sub>4</sub> |  -16.630411|   -9.2577636|                -7.022334|
 
 The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set. ![](README_files/figure-markdown_github/ggplot%20final-1.png)![](README_files/figure-markdown_github/ggplot%20final-2.png)![](README_files/figure-markdown_github/ggplot%20final-3.png)

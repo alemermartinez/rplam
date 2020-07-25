@@ -66,7 +66,7 @@ col2 <- c(fit.full.cl$alpha,fit.full.cl$coef.lin)
 col3 <- c(fit.rob$alpha,fit.rob$coef.lin)
 tabla.b1 <- cbind(col2,col3)
 row.names(tabla.b1) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
-names(tabla.b1) <- c("Classical","Robust")
+colnames(tabla.b1) <- c("Classical","Robust")
 library(knitr)
 kable(tabla.b1,caption = "Table 1")
 ```
@@ -226,7 +226,7 @@ New estimated linear coefficients with the previuos ones are shown in the follow
 col4 <- c(fit.del.cl$alpha,fit.del.cl$coef.lin)
 tabla.b1.aux <- cbind(tabla.b1,col4)
 row.names(tabla.b1.aux) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
-names(tabla.b1.aux) <- c("Classical","Robust","Classical on clean data")
+colnames(tabla.b1.aux) <- c("Classical","Robust","Classical on clean data")
 kable(tabla.b1.aux,caption = "Table 2")
 ```
 
