@@ -1,4 +1,6 @@
 
+
+
 #' @export
 tukey.loss <- function(x,k=4.685){
   n <- length(x)
@@ -11,8 +13,8 @@ tukey.loss <- function(x,k=4.685){
 }
 
 #Knot selection
-#' @importFrom splines bs
-#' @importFrom stats lm
+# #' @importFrom splines bs
+# #' @importFrom stats lm
 #' @export
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
@@ -80,8 +82,8 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 }
 
 
-#' @importFrom splines bs
-#' @importFrom MASS rlm
+# #' @importFrom splines bs
+# #' @importFrom MASS rlm
 #' @export
 select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
@@ -158,8 +160,8 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 }
 
 #Classical Partial Linear Additive Model
-#' @importFrom splines bs
-#' @importFrom stats lm
+# #' @importFrom splines bs
+# #' @importFrom stats lm
 #' @export
 plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   # y continuos response variable (n)
@@ -226,8 +228,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 
 
 #Robust Partial Linear Additive Model
-#' @importFrom splines bs
-#' @importFrom stats lm
+# #' @importFrom splines bs
 #' @export
 plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26){
   # y continuos response variable (n)
