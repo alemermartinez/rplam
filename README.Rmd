@@ -60,6 +60,20 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 ```
 When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
+The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
+```{r echo=FALSE, results='asis'}
+col1 <- c(expression(hat(beta)[0]),expression(hat(beta)[1]),expression(hat(beta)[2]),expression(hat(beta)[3]),expression(hat(beta)[4]))
+col2 <- c(fit.full.cl$alpha,fit.full.cl$coef.lin)
+col3 <- c(fit.rob$alpha,fit.rob$coef.lin)
+
+tabla.b1 <- cbind(col2,col3)
+tabla.b1 <- as.data.frame(tabla.b1)
+tabla.b1 <- cbind(c(as.character(as.expression(col1))),tabla.b1)
+names(tabla.b1) <- c("","Classical","Robust")
+library(knitr)
+kable(tabla.b1,caption = "Table 1")
+```
+
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals.
 ```{r ggplot, echo=FALSE,warning=FALSE}
 DF2 <- as.data.frame(list(

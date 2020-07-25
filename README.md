@@ -64,6 +64,16 @@ fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 
 When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
+The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
+
+|                |   Classical|       Robust|
+|----------------|-----------:|------------:|
+| hat(beta)\[0\] |   49.230699|   42.6283885|
+| hat(beta)\[1\] |  -13.088702|  -12.8228650|
+| hat(beta)\[2\] |   -4.768714|   -0.2128605|
+| hat(beta)\[3\] |   -2.936557|    1.5242527|
+| hat(beta)\[4\] |  -16.630411|   -9.2577636|
+
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
 
 It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
