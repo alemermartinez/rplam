@@ -1,6 +1,6 @@
 
 
-
+#' Tukey Loss Function
 #' @export
 tukey.loss <- function(x,k=4.685){
   n <- length(x)
@@ -12,9 +12,11 @@ tukey.loss <- function(x,k=4.685){
   return(salida)
 }
 
-#Knot selection
+#' Classical knot selection
 # #' @importFrom splines bs
 # #' @importFrom stats lm
+#' @examples
+#' x <- seq(-2, 2, length=10)
 #' @export
 select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
@@ -46,7 +48,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
     Xspline <- NULL
     for (ell in 1:d){
       if(nknots>0){
-        knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
       }else{
         knots <- NULL
       }
@@ -56,7 +58,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
     }
     nMat <- dim(Mat.X[[ell]])[2]
 
-    sal <- lm(y~Z.aux+Xspline)
+    sal <- stats::lm(y~Z.aux+Xspline)
     betas <- as.vector(sal$coefficients)
     beta.hat <- betas[-1]
     coef.lin <- betas[2:(q+1)]
@@ -69,7 +71,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
       gs.hat[,ell] <- aux - mean(aux)
     }
 
-    regresion.hat <- predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+    regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
     nbasis <- nknots + degree.spline + 1
     BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+d)
@@ -82,6 +84,9 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 }
 
 
+#' Robust knot selection
+#' @examples
+#' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
@@ -117,7 +122,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
     Xspline <- NULL
     for (ell in 1:d){
       if(nknots>0){
-        knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
       }else{
         knots <- NULL
       }
@@ -131,7 +136,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
     #- Tukey MM estimator -#
     set.seed(seed)
-    sal.r <- rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
+    sal.r <- MASS::rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
 
     betas <- as.vector(sal.r$coefficients)
     beta.hat <- betas[-1]
@@ -145,7 +150,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
       gs.hat[,ell] <- aux - mean(aux)
     }
 
-    regresion.hat.r <- predict(sal.r) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+    regresion.hat.r <- stats::predict(sal.r) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
     nbasis <- nknots + degree.spline + 1
     desvio.hat <- sal.r$s
@@ -159,9 +164,11 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
   return(salida)
 }
 
-#Classical Partial Linear Additive Model
+#' Classical Partial Linear Additive Model
 # #' @importFrom splines bs
 # #' @importFrom stats lm
+#' @examples
+#' x <- seq(-2, 2, length=10)
 #' @export
 plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   # y continuos response variable (n)
@@ -195,7 +202,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   Xspline <- NULL
   for (ell in 1:d){
     if(nknots>0){
-      knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
     }else{
       knots <- NULL
     }
@@ -205,7 +212,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  sal <- lm(y~Z.aux+Xspline)
+  sal <- stats::lm(y~Z.aux+Xspline)
   betas <- as.vector(sal$coefficients)
   beta.hat <- betas[-1]
   coef.lin <- betas[2:(q+1)]
@@ -220,14 +227,16 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
     gs.hat[,ell] <- aux - mean(aux)
   }
 
-  regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
   salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
   return(salida)
 }
 
 
-#Robust Partial Linear Additive Model
+#' Robust Partial Linear Additive Model
+#' @examples
+#' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
 plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26){
@@ -262,7 +271,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   Xspline <- NULL
   for (ell in 1:d){
     if(nknots>0){
-      knots <- quantile(X[,ell],(1:nknots)/(nknots+1))
+      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
     }else{
       knots <- NULL
     }
@@ -273,7 +282,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   nMat <- dim(Mat.X[[ell]])[2]
 
   set.seed(seed)
-  sal <- rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
+  sal <- MASS::rlm(y~Z.aux+Xspline ,method="MM",maxit=100)
   betas <- as.vector(sal$coefficients)
   beta.hat <- betas[-1]
   coef.lin <- betas[2:(q+1)]
@@ -288,7 +297,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
     gs.hat[,ell] <- aux - mean(aux)
   }
 
-  regresion.hat <- as.vector(predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
   salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
   return(salida)
 }
