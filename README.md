@@ -68,11 +68,11 @@ The estimations obtained for each linear coefficient for both classical and robu
 
 |                 |        col2|         col3|
 |-----------------|-----------:|------------:|
-| *λ*             |   49.230699|   42.6283885|
-| *μ*             |  -13.088702|  -12.8228650|
-| *π*             |   -4.768714|   -0.2128605|
-| *β*             |   -2.936557|    1.5242527|
-| *β*<sub>1</sub> |  -16.630411|   -9.2577636|
+| *β*<sub>0</sub> |   49.230699|   42.6283885|
+| *β*<sub>1</sub> |  -13.088702|  -12.8228650|
+| *β*<sub>2</sub> |   -4.768714|   -0.2128605|
+| *β*<sub>3</sub> |   -2.936557|    1.5242527|
+| *β*<sub>4</sub> |  -16.630411|   -9.2577636|
 
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
 
@@ -121,4 +121,14 @@ Z.del <- Z[-out.pos]
 fit.del.cl <- plam.cl(y.del, Z.del, X.del)
 ```
 
-and plot the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set. ![](README_files/figure-markdown_github/ggplot%20final-1.png)![](README_files/figure-markdown_github/ggplot%20final-2.png)![](README_files/figure-markdown_github/ggplot%20final-3.png)
+New estimated linear coefficients with the previuos ones are shown in the following table.
+
+|                 |        col2|         col3|        col4|
+|-----------------|-----------:|------------:|-----------:|
+| *β*<sub>0</sub> |   49.230699|   42.6283885|   39.948805|
+| *β*<sub>1</sub> |  -13.088702|  -12.8228650|  -10.964194|
+| *β*<sub>2</sub> |   -4.768714|   -0.2128605|    3.167666|
+| *β*<sub>3</sub> |   -2.936557|    1.5242527|    4.489971|
+| *β*<sub>4</sub> |  -16.630411|   -9.2577636|   -7.022334|
+
+The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set. ![](README_files/figure-markdown_github/ggplot%20final-1.png)![](README_files/figure-markdown_github/ggplot%20final-2.png)![](README_files/figure-markdown_github/ggplot%20final-3.png)

@@ -62,14 +62,10 @@ When no number of internal knots is specified, functions select.knots.cl or sele
 
 The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
 ```{r echo=FALSE, results='asis'}
-#col1 <- c(expression(hat(beta)[0]),expression(hat(beta)[1]),expression(hat(beta)[2]),expression(hat(beta)[3]),expression(hat(beta)[4]))
 col2 <- c(fit.full.cl$alpha,fit.full.cl$coef.lin)
 col3 <- c(fit.rob$alpha,fit.rob$coef.lin)
-
 tabla.b1 <- cbind(col2,col3)
-#tabla.b1 <- as.data.frame(tabla.b1)
-#tabla.b1 <- cbind(c(as.character(as.expression(col1))),tabla.b1)
-row.names(tabla.b1) <- c('$\\lambda$', "$\\mu$", "$\\pi$","$\\beta$","$\\beta_1$")
+row.names(tabla.b1) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
 names(tabla.b1) <- c("Classical","Robust")
 library(knitr)
 kable(tabla.b1,caption = "Table 1")
@@ -224,7 +220,17 @@ Z.del <- Z[-out.pos]
 
 fit.del.cl <- plam.cl(y.del, Z.del, X.del)
 ```
-and plot the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
+
+New estimated linear coefficients with the previuos ones are shown in the following table.
+```{r echo=FALSE, results='asis'}
+col4 <- c(fit.del.cl$alpha,fit.del.cl$coef.lin)
+tabla.b1.aux <- cbind(tabla.b1,col4)
+row.names(tabla.b1.aux) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
+names(tabla.b1.aux) <- c("Classical","Robust","Classical on clean data")
+kable(tabla.b1.aux,caption = "Table 2")
+```
+
+The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
 ```{r ggplot final, echo=FALSE,warning=FALSE}
 DF4 <- as.data.frame(list(
   rbind(X.del,X),
