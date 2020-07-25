@@ -72,7 +72,7 @@ kable(tabla.b1,caption = "Table 1")
 ```
 
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals.
-```{r ggplot, echo=FALSE,warning=FALSE}
+```{r ggplot1, echo=FALSE,warning=FALSE}
 DF2 <- as.data.frame(list(
   rbind(X,X),
   c(fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1])),
@@ -113,7 +113,7 @@ ggplot(DF2,aes(x=Solar.R,y=re.S,color=Fit)) +
 ```
 
 It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
-```{r residuals}
+```{r residuals1}
 res.rob <- y-fit.rob$prediction
 summary(res.rob)
 ```
@@ -121,7 +121,7 @@ summary(res.rob)
 ```{r cowplot, echo=FALSE, warning=FALSE}
 library(cowplot)
 ```
-```{r residuals plots, echo=FALSE,warning=FALSE}
+```{r residuals2, echo=FALSE,warning=FALSE}
 DF3 <- as.data.frame(list(
   1:111,
   y-fit.rob$prediction
@@ -154,14 +154,15 @@ plot_grid(p1, p2, p3)
 ```
 
 The residuals detected as outliers are:
-```{r boxplot info, echo=FALSE,warning=FALSE}
+```{r boxplotinfo, echo=FALSE,warning=FALSE}
 p1.info <- ggplot_build(p1)$data[[1]]
 ```
 ```{r outliers}
 p1.info$outliers[[1]]
 ```
 which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
-```{r ggplot highlighted, echo=FALSE,warning=FALSE}
+
+```{r ggplot-highlighted, echo=FALSE,warning=FALSE}
 DF3 <- as.data.frame(list(
   X,
   fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1]),
@@ -231,7 +232,8 @@ kable(tabla.b1.aux,caption = "Table 2")
 ```
 
 The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
-```{r ggplot final, echo=FALSE,warning=FALSE}
+
+```{r ggplot-final, echo=FALSE,warning=FALSE}
 DF4 <- as.data.frame(list(
   rbind(X.del,X),
   c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$alpha - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1])),

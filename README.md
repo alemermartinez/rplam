@@ -74,7 +74,7 @@ The estimations obtained for each linear coefficient for both classical and robu
 | *β*<sub>3</sub> |   -2.936557|    1.5242527|
 | *β*<sub>4</sub> |  -16.630411|   -9.2577636|
 
-The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot-1.png)![](README_files/figure-markdown_github/ggplot-2.png)![](README_files/figure-markdown_github/ggplot-3.png)
+The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot1-1.png)![](README_files/figure-markdown_github/ggplot1-2.png)![](README_files/figure-markdown_github/ggplot1-3.png)
 
 It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
 
@@ -98,7 +98,7 @@ summary(res.rob)
 
     ## ********************************************************
 
-![](README_files/figure-markdown_github/residuals%20plots-1.png)
+![](README_files/figure-markdown_github/residuals2-1.png)
 
 The residuals detected as outliers are:
 
@@ -108,7 +108,9 @@ p1.info$outliers[[1]]
 
     ## [1]  54.69827  70.38513  52.77027 103.61697
 
-which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots: ![](README_files/figure-markdown_github/ggplot%20highlighted-1.png)![](README_files/figure-markdown_github/ggplot%20highlighted-2.png)![](README_files/figure-markdown_github/ggplot%20highlighted-3.png)
+which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
+
+![](README_files/figure-markdown_github/ggplot-highlighted-1.png)![](README_files/figure-markdown_github/ggplot-highlighted-2.png)![](README_files/figure-markdown_github/ggplot-highlighted-3.png)
 
 Now, we remove these four observations from the original data set and re-calculate the classical estimator
 
@@ -131,4 +133,6 @@ New estimated linear coefficients with the previuos ones are shown in the follow
 | *β*<sub>3</sub> |   -2.936557|    1.5242527|                 4.489971|
 | *β*<sub>4</sub> |  -16.630411|   -9.2577636|                -7.022334|
 
-The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set. ![](README_files/figure-markdown_github/ggplot%20final-1.png)![](README_files/figure-markdown_github/ggplot%20final-2.png)![](README_files/figure-markdown_github/ggplot%20final-3.png)
+The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
+
+![](README_files/figure-markdown_github/ggplot-final-1.png)![](README_files/figure-markdown_github/ggplot-final-2.png)![](README_files/figure-markdown_github/ggplot-final-3.png)
