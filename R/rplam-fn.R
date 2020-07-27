@@ -288,6 +288,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   coef.lin <- betas[2:(q+1)]
   coef.spl <- betas[(q+2):(1+q+nMat*d)]
   alpha.hat <- betas[1]
+  sigma.hat <- sal$s
 
   gs.hat <- matrix(0,n,d)
   correc <- rep(0,d)
@@ -298,7 +299,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   }
 
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
+  salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
   return(salida)
 }
 
