@@ -73,7 +73,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
     regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-    nbasis <- nknots + degree.spline + 1
+    nbasis <- d*nknots + degree.spline + 1 #nbasis <- nknots + degree.spline + 1
     BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+d)
   }
   posicion <- which.min(BIC)
@@ -152,7 +152,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
     regresion.hat.r <- stats::predict(sal.r) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-    nbasis <- nknots + degree.spline + 1
+    nbasis <- d*nknots + degree.spline + 1 #nbasis <- nknots + degree.spline + 1
     desvio.hat <- sal.r$s
     tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
     RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+d)
