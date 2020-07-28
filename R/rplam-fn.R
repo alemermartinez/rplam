@@ -194,7 +194,9 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
   }
 
   if( is.null(nknots) ){
-    nknots <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)$nknots
+    AUX <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)
+    nbasis <- AUX$nbasis
+    nknots <- AUX$nknots
   }
 
   Mat.X <- as.list(rep(0,d))
@@ -229,7 +231,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
+  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis)
   return(salida)
 }
 
@@ -263,7 +265,9 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   }
 
   if( is.null(nknots) ){
-    nknots <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)$nknots
+    AUX <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
+    nknots <- AUX$nknots
+    nbasis <- AUX$nbasis
   }
 
   Mat.X <- as.list(rep(0,d))
@@ -299,7 +303,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, seed=26)
   }
 
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat)
+  salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis)
   return(salida)
 }
 
