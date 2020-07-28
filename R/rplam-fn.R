@@ -79,7 +79,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
   posicion <- which.min(BIC)
   nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
 
-  salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots)
+  salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = (d*nknots+degree.spline+1))
   return(salida)
 }
 
@@ -160,7 +160,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
   posicion <- which.min(RBIC)
   nknots <- posicion-1
 
-  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots)
+  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = (d*nknots + degree.spline + 1))
   return(salida)
 }
 
