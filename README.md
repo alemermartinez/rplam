@@ -86,10 +86,6 @@ summary(res.rob)
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
     ## -21.7551  -6.2581  -0.2832   2.6631   7.6366 103.6170
 
-``` r
-library(cowplot)
-```
-
 ![](README_files/figure-markdown_github/residuals2-1.png)
 
 The residuals detected as outliers are:

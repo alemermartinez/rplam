@@ -118,7 +118,7 @@ res.rob <- y-fit.rob$prediction
 summary(res.rob)
 ```
 
-```{r cowplot, results='hide', cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, message=FALSE}
+```{r cowplot, echo=FALSE, results='hide', cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, message=FALSE}
 library(cowplot)
 ```
 ```{r residuals2, echo=FALSE,warning=FALSE}
