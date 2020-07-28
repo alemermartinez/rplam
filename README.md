@@ -39,7 +39,7 @@ nk.cl <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)
 nk.cl$nknots
 ```
 
-    ## [1] 9
+    ## [1] 1
 
 And so is the number of internal knots selected using the RBIC criteria used for the robust proposal.
 
@@ -48,7 +48,7 @@ nk.rob <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
 nk.rob$nknots
 ```
 
-    ## [1] 9
+    ## [1] 1
 
 Classical estimation of a partially linear additive model
 
@@ -66,13 +66,13 @@ When no number of internal knots is specified, functions select.knots.cl or sele
 
 The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
 
-|                 |   Classical|       Robust|
-|-----------------|-----------:|------------:|
-| *β*<sub>0</sub> |   49.230699|   42.6283885|
-| *β*<sub>1</sub> |  -13.088702|  -12.8228650|
-| *β*<sub>2</sub> |   -4.768714|   -0.2128605|
-| *β*<sub>3</sub> |   -2.936557|    1.5242527|
-| *β*<sub>4</sub> |  -16.630411|   -9.2577636|
+|                 |   Classical|      Robust|
+|-----------------|-----------:|-----------:|
+| *β*<sub>0</sub> |   46.053662|  40.6513100|
+| *β*<sub>1</sub> |   -6.736466|  -5.6409264|
+| *β*<sub>2</sub> |   -4.613679|  -0.5397012|
+| *β*<sub>3</sub> |    3.906954|   5.1664537|
+| *β*<sub>4</sub> |  -12.008022|  -5.8161019|
 
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals. ![](README_files/figure-markdown_github/ggplot1-1.png)![](README_files/figure-markdown_github/ggplot1-2.png)![](README_files/figure-markdown_github/ggplot1-3.png)
 
@@ -84,7 +84,7 @@ summary(res.rob)
 ```
 
     ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## -21.7551  -6.2581  -0.2832   2.6631   7.6366 103.6170
+    ## -27.4217  -6.7043  -0.2795   2.4806   7.7085 102.9287
 
 ![](README_files/figure-markdown_github/residuals2-1.png)
 
@@ -94,7 +94,7 @@ The residuals detected as outliers are:
 p1.info$outliers[[1]]
 ```
 
-    ## [1]  54.69827  70.38513  52.77027 103.61697
+    ## [1]  69.68170  66.01789  44.79089 102.92874
 
 which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
 
@@ -113,13 +113,13 @@ fit.del.cl <- plam.cl(y.del, Z.del, X.del)
 
 New estimated linear coefficients with the previuos ones are shown in the following table.
 
-|                 |   Classical|       Robust|  Classical on clean data|
-|-----------------|-----------:|------------:|------------------------:|
-| *β*<sub>0</sub> |   49.230699|   42.6283885|                39.948805|
-| *β*<sub>1</sub> |  -13.088702|  -12.8228650|               -10.964194|
-| *β*<sub>2</sub> |   -4.768714|   -0.2128605|                 3.167666|
-| *β*<sub>3</sub> |   -2.936557|    1.5242527|                 4.489971|
-| *β*<sub>4</sub> |  -16.630411|   -9.2577636|                -7.022334|
+|                 |   Classical|      Robust|  Classical on clean data|
+|-----------------|-----------:|-----------:|------------------------:|
+| *β*<sub>0</sub> |   46.053662|  40.6513100|               39.3740650|
+| *β*<sub>1</sub> |   -6.736466|  -5.6409264|               -4.9202606|
+| *β*<sub>2</sub> |   -4.613679|  -0.5397012|               -0.1260116|
+| *β*<sub>3</sub> |    3.906954|   5.1664537|                6.4751791|
+| *β*<sub>4</sub> |  -12.008022|  -5.8161019|               -5.5576644|
 
 The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
 
