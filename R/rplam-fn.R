@@ -6,8 +6,10 @@ tukey.loss <- function(x,k=4.685){
   n <- length(x)
   salida <- rep(0,n)
   for(i in 1:n){
-    if(abs(x[i])<=k){salida[i] <- (x[i])^6/(6*k^4)-(x[i])^4/(2*k^2)+(x[i])^2/2
-    }else{salida[i] <- k^2/6}
+    if(abs(x[i])<=k){salida[i] <- 1-(1-(x[i]/k)^2)^3 #(x[i])^6/(6*k^4)-(x[i])^4/(2*k^2)+(x[i])^2/2
+    }else{
+      salida[i] <- 1 #k^2/6
+    }
   }
   return(salida)
 }
@@ -73,13 +75,13 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
     regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-    nbasis <- d*nknots + degree.spline + 1 #nbasis <- nknots + degree.spline + 1
+    nbasis <- d*(nknots + degree.spline + 1) #nbasis <- nknots + degree.spline + 1
     BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+d)
   }
   posicion <- which.min(BIC)
   nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
 
-  salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = (d*nknots+degree.spline+1))
+  salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = (d*(nknots+degree.spline+1)), kj=(nknots+degree.spline+1) )
   return(salida)
 }
 
@@ -152,7 +154,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
 
     regresion.hat.r <- stats::predict(sal.r) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-    nbasis <- d*nknots + degree.spline + 1 #nbasis <- nknots + degree.spline + 1
+    nbasis <- d*(nknots + degree.spline + 1) #nbasis <- nknots + degree.spline + 1
     desvio.hat <- sal.r$s
     tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
     RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+d)
@@ -160,7 +162,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3,seed=26){
   posicion <- which.min(RBIC)
   nknots <- posicion-1
 
-  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = (d*nknots + degree.spline + 1))
+  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = (d*(nknots + degree.spline + 1)), kj=(nknots+degree.spline+1))
   return(salida)
 }
 
