@@ -92,7 +92,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
-select.nknots.rob <- function(y,Z,X,degree.spline=3, maxit=20){
+select.nknots.rob <- function(y,Z,X,degree.spline=3, maxit=20, method="MM"){
 
   n <- length(y)
   d <- dim(X)[2]
@@ -137,7 +137,7 @@ select.nknots.rob <- function(y,Z,X,degree.spline=3, maxit=20){
 
 
     #- Tukey MM estimator -#
-    sal.r <- MASS::rlm(y~Z.aux+Xspline, method="MM", maxit=maxit)
+    sal.r <- MASS::rlm(y~Z.aux+Xspline, method=method, maxit=maxit)
 
     betas <- as.vector(sal.r$coefficients)
     beta.hat <- betas[-1]
@@ -242,7 +242,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20){
+plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20, method="MM"){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -266,7 +266,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20
   }
 
   if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
+    AUX <- select.nknots.rob(y,Z,X,degree.spline=degree.spline, method=method)
     nknots <- AUX$nknots
     nbasis <- AUX$nbasis
   }
@@ -286,7 +286,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  sal <- MASS::rlm(y~Z.aux+Xspline ,method="MM",maxit=maxit)
+  sal <- MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
   betas <- as.vector(sal$coefficients)
   beta.hat <- betas[-1]
   coef.lin <- betas[2:(q+1)]
