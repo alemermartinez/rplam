@@ -92,7 +92,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
-select.nknots.rob <- function(y,Z,X,degree.spline=3, maxit=20, method="MM"){
+select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=20){
 
   n <- length(y)
   d <- dim(X)[2]
@@ -266,7 +266,7 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20
   }
 
   if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y,Z,X,degree.spline=degree.spline, method=method)
+    AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
     nknots <- AUX$nknots
     nbasis <- AUX$nbasis
   }
