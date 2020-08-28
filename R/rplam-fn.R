@@ -76,7 +76,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
     regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
     nbasis <- d*(nknots + degree.spline + 1) #nbasis <- nknots + degree.spline + 1
-    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+d)
+    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
   }
   posicion <- which.min(BIC)
   nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
@@ -92,7 +92,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
-select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=20){
+select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
   n <- length(y)
   d <- dim(X)[2]
@@ -156,7 +156,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=20){
     nbasis <- d*(nknots + degree.spline + 1) #nbasis <- nknots + degree.spline + 1
     desvio.hat <- sal.r$s
     tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
-    RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+d)
+    RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
   }
   posicion <- which.min(RBIC)
   nknots <- posicion-1
@@ -242,7 +242,7 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=20, method="MM"){
+plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
