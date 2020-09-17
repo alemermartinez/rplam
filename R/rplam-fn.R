@@ -14,6 +14,13 @@ tukey.loss <- function(x,k=4.685){
   return(salida)
 }
 
+#' Tukey Loss Function
+#' @export
+my.norm.2 <- function(x){
+  return( sqrt(sum(x^2)) )
+}
+
+
 #' Classical knot selection
 # #' @importFrom splines bs
 # #' @importFrom stats lm
@@ -328,34 +335,47 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=10
 #' SCAD penalty function
 #' @export
 scad.p <- function(t, lambda, a=3.7){
-  if(abs(t)<= lambda){
-    return(lambda*abs(t))
+  t <- as.vector(t)
+  nt <- lenght(t)
+  sal <- rep(0,nt)
+  for(i in 1:nt){
+    if(abs(t[i])<= lambda){
+      sal[i] <- lambda*abs(t[i])
+    }
+    if( (lambda<abs(t[i])) & (abs(t[i])<=a*lambda) ){
+    sal[i] <- -(t^2-2*a*lambda*abs(t[i])+lambda^2)/(2*(a-1))
+    }else{
+      sal[i] <- (a+1)*lambda^2/2
+    }
   }
-  if( (lambda<abs(t)) & (abs(t)<=a*lambda) ){
-    return( -(t^2-2*a*lambda*abs(t)+lambda^2)/(2*(a-1)) )
-  }else{
-    return( (a+1)*lambda^2/2 )
-  }
+  return(sal)
 }
 
 #' Derivative of the SCAD penality function
 #' @export
 scad.d <- function(t, lambda, a=3.7){
+  t <- as.vector(t)
   t <- abs(t) #Esta condición no la ponen pero no está bien si no.
-  if(t<=lambda){
-    return(lambda)
-  }else{
-    aux <- a*lambda-t
-    if(aux>0){
-      return( aux/(a-1) )
+  nt <- length(t)
+  sal <- rep(0,nt)
+  for(i in 1:nt){
+    if(t[i]<=lambda){
+      sal[i] <- lambda
     }else{
-      return(0)
+      aux <- a*lambda-t[i]
+      if(aux>0){
+        sal[i] <-  aux/(a-1)
+      }else{
+        sal[i] <- 0
+      }
     }
   }
+  return(sal)
 }
 
-
-plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
+#' Variable selection in robust PLAM
+#' @export
+plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", lambda=1, MAXITER=100){
     # y continuos response variable (n)
     # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
     # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -398,14 +418,58 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
       Xspline <- cbind(Xspline,Mat.X[[ell]])
     }
     nMat <- dim(Mat.X[[ell]])[2]
-
-    sal <- MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
-    betas <- as.vector(sal$coefficients)
-    beta.hat <- betas[-1]
-    coef.lin <- betas[2:(q+1)]
-    coef.spl <- betas[(q+2):(1+q+nMat*d)]
-    alpha.hat <- betas[1]
+    sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
+    xdesign <- sal$x
     sigma.hat <- sal$s
+    #Construyo el beta 0
+    beta.ini <- as.vector(sal$coefficients)
+    beta.hat <- beta1[-1]
+    coef.lin <- beta1[2:(q+1)]
+    coef.spl <- beta1[(q+2):(1+q+nMat*d)]
+    nbetas <- length(beta1)
+
+    corte <- 1
+    iter <- 0
+    while( (corte>10^(-3)) & (iter<MAXITER)){
+      iter <- iter +1
+      print(iter)
+      regresion.hat <- xdesign%*%beta.ini
+      res <- y-regresion.hat
+      an <- quantile(abs(res),2*(n^(-1/2)))
+      W <- diag( as.vector(tukey.loss((res)/sigma.hat)/(an+(res)^2) ))
+
+      Sigmalambda <- matrix(0,nbetas,nbetas)
+      for(i in 1:(q+1)){
+        Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambda)/abs(beta.ini[i])
+      }
+      for(i in 1:d){
+        Hj <- Hj.matrix(X[,i], nknots, degree.spline)
+        gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
+        normgammaj <- sqrt( t(gammaj)%*%Hj%*%gammaj )
+        Sigmalambda[(q+2+nMat*(i-1)):(nMat*i+(q+2)),(q+2+nMat*(i-1)):(nMat*i+(q+2))] <- as.numeric(scad.d(normgammaj,lambda=lambda)/(normgammaj))*Hj
+      }
+
+      #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
+
+      options(show.error.messages = FALSE)
+      try.sal <- try(
+        AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
+      )
+
+      if(class(try.sal)!= 'try-error'){
+        beta1 <- as.vector(AUX%*%t(xdesign)%*%W%*%y)
+        corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
+        beta.ini <- beta1
+      }else{
+        beta1 <- beta.ini
+        iter <- MAXITER
+      }
+    }
+
+    beta.hat <- beta1[-1]
+    coef.lin <- beta1[2:(q+1)]
+    coef.spl <- beta1[(q+2):(1+q+nMat*d)]
+    alpha.hat <- beta1[1]
 
     gs.hat <- matrix(0,n,d)
     correc <- rep(0,d)
@@ -415,12 +479,24 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
       gs.hat[,ell] <- aux - mean(aux)
     }
 
-    regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
     salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis)
     return(salida)
   }
 
 
+#Matriz Hj
+Hj.matrix <- function(Xj, nknots, degree.spline){
+  if(nknots>0){
+     knots <- stats::quantile(Xj,(1:nknots)/(nknots+1))
+  }else{
+    knots <- NULL
+  }
+  rango <- range(Xj)
+  grilla <- seq(rango[1],rango[2],length=1000)
+  Mat <- splines::bs(grilla, knots=knots, degree=degree.spline, intercept=FALSE)
+  #dim(Mat)
+  return( (t(Mat)%*%Mat)/length(grilla) )
+}
 
 
 
