@@ -402,6 +402,10 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
       AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
       nknots <- AUX$nknots
       nbasis <- AUX$nbasis
+      kj <- AUX$kj
+    }else{
+      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+      kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
     }
 
     Mat.X <- as.list(rep(0,d))
@@ -432,7 +436,7 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
     iter <- 0
     while( (corte>10^(-3)) & (iter<MAXITER)){
       iter <- iter +1
-      print(iter)
+      #print(iter)
       regresion.hat <- xdesign%*%beta.ini
       res <- y-regresion.hat
       an <- quantile(abs(res),2*(n^(-1/2)))
@@ -479,7 +483,7 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
       gs.hat[,ell] <- aux - mean(aux)
     }
 
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis)
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, lambda=lambda)
     return(salida)
   }
 
