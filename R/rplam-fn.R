@@ -333,17 +333,20 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=10
 ########################
 
 #' SCAD penalty function
+#' @examples
+#' x <- seq(-5, 5, length=100)
+#' scad.p(x)
 #' @export
-scad.p <- function(t, lambda, a=3.7){
-  t <- as.vector(t)
-  nt <- lenght(t)
+scad.p <- function(x, lambda, a=3.7){
+  x <- as.vector(x)
+  nt <- length(x)
   sal <- rep(0,nt)
   for(i in 1:nt){
-    if(abs(t[i])<= lambda){
-      sal[i] <- lambda*abs(t[i])
+    if(abs(x[i])<= lambda){
+      sal[i] <- lambda*abs(x[i])
     }
-    if( (lambda<abs(t[i])) & (abs(t[i])<=a*lambda) ){
-    sal[i] <- -(t^2-2*a*lambda*abs(t[i])+lambda^2)/(2*(a-1))
+    if( (lambda<abs(x[i])) & (abs(x[i])<=a*lambda) ){
+    sal[i] <- -(x^2-2*a*lambda*abs(x[i])+lambda^2)/(2*(a-1))
     }else{
       sal[i] <- (a+1)*lambda^2/2
     }
@@ -375,7 +378,7 @@ scad.d <- function(t, lambda, a=3.7){
 
 #' Variable selection in robust PLAM
 #' @export
-plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", lambda=1, MAXITER=100){
+plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100){
     # y continuos response variable (n)
     # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
     # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -427,11 +430,12 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
     sigma.hat <- sal$s
     #Construyo el beta 0
     beta.ini <- as.vector(sal$coefficients)
-    beta.hat <- beta1[-1]
-    coef.lin <- beta1[2:(q+1)]
-    coef.spl <- beta1[(q+2):(1+q+nMat*d)]
-    nbetas <- length(beta1)
+    #beta.hat <- beta.ini[-1]
+    #coef.lin <- beta.ini[2:(q+1)]
+    #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
+    nbetas <- length(beta.ini)
 
+    normgammaj <- rep(0,d)
     corte <- 1
     iter <- 0
     while( (corte>10^(-3)) & (iter<MAXITER)){
@@ -444,18 +448,18 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
 
       Sigmalambda <- matrix(0,nbetas,nbetas)
       for(i in 1:(q+1)){
-        Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambda)/abs(beta.ini[i])
+        Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])
       }
       for(i in 1:d){
         Hj <- Hj.matrix(X[,i], nknots, degree.spline)
         gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
-        normgammaj <- sqrt( t(gammaj)%*%Hj%*%gammaj )
-        Sigmalambda[(q+2+nMat*(i-1)):(nMat*i+(q+2)),(q+2+nMat*(i-1)):(nMat*i+(q+2))] <- as.numeric(scad.d(normgammaj,lambda=lambda)/(normgammaj))*Hj
+        normgammaj[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
+        Sigmalambda[(q+2+nMat*(i-1)):(nMat*i+(q+1)),(q+2+nMat*(i-1)):(nMat*i+(q+1))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj
       }
 
       #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
 
-      options(show.error.messages = FALSE)
+      #options(show.error.messages = TRUE)
       try.sal <- try(
         AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
       )
@@ -483,12 +487,13 @@ plam.rob.vs <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit
       gs.hat[,ell] <- aux - mean(aux)
     }
 
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, lambda=lambda)
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj)
     return(salida)
   }
 
 
-#Matriz Hj
+#' Hj matrix
+#' @export
 Hj.matrix <- function(Xj, nknots, degree.spline){
   if(nknots>0){
      knots <- stats::quantile(Xj,(1:nknots)/(nknots+1))
@@ -500,6 +505,102 @@ Hj.matrix <- function(Xj, nknots, degree.spline){
   Mat <- splines::bs(grilla, knots=knots, degree=degree.spline, intercept=FALSE)
   #dim(Mat)
   return( (t(Mat)%*%Mat)/length(grilla) )
+}
+
+#' Selection lambdas with robust BIC criteria
+#' @export
+select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100){
+  # y continuos response variable (n)
+  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
+  # In case it is a cathegorical variable, class of Z should be 'factor'.
+  # X a vector (n) or a matrix (n x d) for the additive part.
+  # nknots number of internal knots
+  # knots specific internal knots
+
+  n <- length(y)
+  d <- dim(X)[2]
+
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
+
+  if( is.null(nknots) ){
+    AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
+    nknots <- AUX$nknots
+    nbasis <- AUX$nbasis
+    kj <- AUX$kj
+  }else{
+    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+  Xspline <- NULL
+  for (ell in 1:d){
+    if(nknots>0){
+      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+    }else{
+      knots <- NULL
+    }
+    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+  }
+  nMat <- dim(Mat.X[[ell]])[2]
+  sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
+  xdesign <- sal$x
+  sigma.hat <- sal$s
+  #Construyo el beta 0
+  beta0 <- beta.ini <- as.vector(sal$coefficients)
+  #beta.hat <- beta.ini[-1]
+  #coef.lin <- beta.ini[2:(q+1)]
+  #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
+  nbetas <- length(beta.ini)
+  normgammaj0 <- rep(0,d)
+  for(i in 1:d){
+    Hj <- Hj.matrix(X[,i], nknots, degree.spline)
+    gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
+    normgammaj0[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
+  }
+
+  grilla <- expand.grid(grid.lambda1,grid.lambda2)
+  dim.grilla <- dim(grilla)[1]
+  BIC <- rep(0,dim.grilla)
+  for(i in 1:dim.grilla){
+    print(i)
+    lambdas1 <- rep(grilla[i,1],q+1)
+    lambdas2 <- rep(grilla[i,2],d)
+    AUX2 <- plam.rob.vs.lambdas(y, Z, X, lambdas1, lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+    betas <- AUX2$betas
+    nbasis <- AUX2$nbasis
+    xdesign <- AUX2$xdesign
+    desvio.hat <- AUX2$sigma.hat
+    normgammaj <- AUX2$normgammaj
+    dfc <- sum( abs(betas[1:(q+1)])>10^(-3))
+    dfn <- sum( normgammaj >10^(-3))
+    regresion.hat <- xdesign%*%betas
+    tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )
+    BIC[i] <- mean(tuk) + dfn*(log(n/nbasis)/(n/nbasis)) + dfc*(log(n)/n)
+  }
+
+  position <- which.min(BIC)
+  la1 <- grilla[position,1]
+  la2 <- grilla[position,2]
+
+  lambdas1 <- la1/abs(beta0[1:(q+1)])
+  lambdas2 <- la2/normgammaj0
+
+  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2)
+  return(salida)
 }
 
 
