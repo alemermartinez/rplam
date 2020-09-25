@@ -6,7 +6,7 @@
 \usage{
 plam.rob.vs.lambdas(y, Z, X, lambdas1, lambdas2, nknots = NULL,
   knots = NULL, degree.spline = 3, maxit = 100, method = "MM",
-  MAXITER = 100)
+  MAXITER = 100, bound.control = 10^(-3))
 }
 \description{
 Variable selection in robust PLAM
