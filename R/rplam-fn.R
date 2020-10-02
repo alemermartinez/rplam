@@ -184,7 +184,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
+plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -249,8 +249,42 @@ plam.cl <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3){
 
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-  salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
-  return(salida)
+  if(is.null(np.point)){
+    salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- punto <- as.matrix(np.point)
+      }else{
+        prediccion <- punto <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- punto <- np.point
+    }
+    np <- dim(np.point)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X.new[[ell]] <- splines::bs( np.point[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- aux - correc[ell]
+      }
+    }
+    salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    return(salida)
+  }
 }
 
 
