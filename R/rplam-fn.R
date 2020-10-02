@@ -460,11 +460,12 @@ plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=
       #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
 
       #options(show.error.messages = TRUE)
-      aa <- t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda
-      #print(det(aa))
-      #dimaa <- dim(aa)[1]
+
       try.sal <- try(
-        AUX <- solve(aa)
+        AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
+        #aa <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
+        #print(det(aa))
+        #dimaa <- dim(aa)[1]
         #AUX <- .C("inverse", as.double(aa), salida=as.double(0), as.integer(dimaa))$salida
       )
 
@@ -708,8 +709,8 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     dfc <- sum( abs(betas[1:(q+1)])>10^(-3))
     dfn <- sum( normgammaj >10^(-3))
     regresion.hat <- xdesign%*%betas
-    #tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )
-    tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )*desvio.hat^2
+    tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )
+    #tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )*desvio.hat^2 #Este funciona peor
     BIC[i] <- mean(tuk) + dfn*(log(n/nbasis)/(n/nbasis)) + dfc*(log(n)/n)
   }
 
