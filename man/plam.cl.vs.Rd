@@ -4,8 +4,9 @@
 \alias{plam.cl.vs}
 \title{Classical Partial Linear Additive Model with Variable Selection}
 \usage{
-plam.cl.vs(y, Z, X, vs = TRUE, nknots = NULL, knots = NULL,
-  degree.spline = 3, MAXITER = 100, bound.control = 10^(-3))
+plam.cl.vs(y, Z, X, np.point = NULL, vs = TRUE, nknots = NULL,
+  knots = NULL, degree.spline = 3, MAXITER = 100,
+  bound.control = 10^(-3))
 }
 \description{
 Classical Partial Linear Additive Model with Variable Selection

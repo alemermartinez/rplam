@@ -4,7 +4,8 @@
 \alias{plam.cl}
 \title{Classical Partial Linear Additive Model}
 \usage{
-plam.cl(y, Z, X, nknots = NULL, knots = NULL, degree.spline = 3)
+plam.cl(y, Z, X, np.point = NULL, nknots = NULL, knots = NULL,
+  degree.spline = 3)
 }
 \description{
 Classical Partial Linear Additive Model

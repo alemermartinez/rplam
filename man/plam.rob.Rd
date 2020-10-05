@@ -4,8 +4,8 @@
 \alias{plam.rob}
 \title{Robust Partial Linear Additive Model}
 \usage{
-plam.rob(y, Z, X, nknots = NULL, knots = NULL, degree.spline = 3,
-  maxit = 100, method = "MM")
+plam.rob(y, Z, X, np.point = NULL, nknots = NULL, knots = NULL,
+  degree.spline = 3, maxit = 100, method = "MM")
 }
 \description{
 Robust Partial Linear Additive Model

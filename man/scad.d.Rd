@@ -4,7 +4,7 @@
 \alias{scad.d}
 \title{Derivative of the SCAD penality function}
 \usage{
-scad.d(t, lambda, a = 3.7)
+scad.d(x, lambda, a = 3.7)
 }
 \description{
 Derivative of the SCAD penality function
