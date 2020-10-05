@@ -101,8 +101,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
-select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100, seed=123){
-  set.seed(seed)
+select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
   n <- length(y)
   d <- dim(X)[2]
@@ -296,14 +295,13 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", seed=123){
+plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
   # X a vector (n) or a matrix (n x d) for the additive part.
   # nknots number of internal knots
   # knots specific internal knots
-  set.seed(seed)
 
   n <- length(y)
   d <- dim(X)[2]
@@ -451,7 +449,7 @@ scad.d <- function(x, lambda, a=3.7){
 
 #' Variable selection in robust PLAM with fixed lambdas
 #' @export
-plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3), seed=123){
+plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
     # y continuos response variable (n)
     # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
     # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -476,7 +474,7 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
     }
 
     if( is.null(nknots) ){
-      AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit, seed=seed)
+      AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
       nknots <- AUX$nknots
       nbasis <- AUX$nbasis
       kj <- AUX$kj
@@ -500,7 +498,6 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
     }
     nMat <- dim(Mat.X[[ell]])[2]
 
-    set.seed(seed)
     sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
     xdesign <- sal$x
     sigma.hat <- sal$s
@@ -779,7 +776,7 @@ Hj.matrix <- function(Xj, nknots, degree.spline){
 
 #' Selection lambdas with robust BIC criteria
 #' @export
-select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, seed=123){
+select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -803,7 +800,7 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
   }
 
   if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y=y, Z=Z, X=X, degree.spline=degree.spline, method=method, maxit=maxit, seed=seed)
+    AUX <- select.nknots.rob(y=y, Z=Z, X=X, degree.spline=degree.spline, method=method, maxit=maxit)
     nknots <- AUX$nknots
     nbasis <- AUX$nbasis
     kj <- AUX$kj
@@ -849,7 +846,7 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     #print(i)
     lambdas1 <- rep(grilla[i,1],q+1)
     lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER, seed=seed)
+    AUX2 <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     xdesign <- AUX2$xdesign
@@ -975,7 +972,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3), seed=123){
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
     grid.lambda1 <- seq(0,0.5,0.1)
     grid.lambda2 <- seq(0,0.5,0.1)
@@ -986,13 +983,13 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL
      if(lambda2==0.5){
        grid.lambda1 <- seq(0.5,1,0.1)
        grid.lambda2 <- seq(0.5,1,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, seed=seed)
+       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
        lambda1 <- sal$la1
        lambda2 <- sal$la2
      }else{
        grid.lambda1 <- seq(0.5,1,0.1)
        grid.lambda2 <- seq(0,0.5,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, seed=seed)
+       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
        lambda1 <- sal$la1
        lambda2 <- sal$la2
      }
