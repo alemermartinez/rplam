@@ -101,7 +101,8 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 # #' @importFrom splines bs
 # #' @importFrom MASS rlm
 #' @export
-select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
+select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100, seed=123){
+  set.seed(seed)
 
   n <- length(y)
   d <- dim(X)[2]
@@ -176,6 +177,8 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
   salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = nbasis, kj = kj)
   return(salida)
+
+
 }
 
 #' Classical Partial Linear Additive Model
@@ -262,7 +265,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
     }else{
       prediccion <- punto <- np.point
     }
-    np <- dim(np.point)[1]
+    np <- dim(punto)[1]
     Mat.X.new <- as.list(rep(0,d))
     Xspline.new <- NULL
     for(ell in 1:d){
@@ -271,7 +274,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
       }else{
         knots <- NULL
       }
-      Mat.X.new[[ell]] <- splines::bs( np.point[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
     }
 
@@ -293,13 +296,14 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
+plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", seed=123){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
   # X a vector (n) or a matrix (n x d) for the additive part.
   # nknots number of internal knots
   # knots specific internal knots
+  set.seed(seed)
 
   n <- length(y)
   d <- dim(X)[2]
@@ -358,8 +362,43 @@ plam.rob <- function(y, Z, X, nknots=NULL, knots=NULL, degree.spline=3, maxit=10
   }
 
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-  salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
-  return(salida)
+
+  if(is.null(np.point)){
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- punto <- as.matrix(np.point)
+      }else{
+        prediccion <- punto <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- punto <- np.point
+    }
+    np <- dim(punto)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- aux - correc[ell]
+      }
+    }
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    return(salida)
+  }
 }
 
 ########################
@@ -390,16 +429,16 @@ scad.p <- function(x, lambda, a=3.7){
 
 #' Derivative of the SCAD penality function
 #' @export
-scad.d <- function(t, lambda, a=3.7){
-  t <- as.vector(t)
-  t <- abs(t) #Esta condición no la ponen pero no está bien si no.
-  nt <- length(t)
+scad.d <- function(x, lambda, a=3.7){
+  x <- as.vector(x)
+  x <- abs(x) #Esta condición no la ponen pero no está bien si no.
+  nt <- length(x)
   sal <- rep(0,nt)
   for(i in 1:nt){
-    if(t[i]<=lambda){
+    if(x[i]<=lambda){
       sal[i] <- lambda
     }else{
-      aux <- a*lambda-t[i]
+      aux <- a*lambda-x[i]
       if(aux>0){
         sal[i] <-  aux/(a-1)
       }else{
@@ -412,13 +451,14 @@ scad.d <- function(t, lambda, a=3.7){
 
 #' Variable selection in robust PLAM with fixed lambdas
 #' @export
-plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3), seed=123){
     # y continuos response variable (n)
     # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
     # In case it is a cathegorical variable, class of Z should be 'factor'.
     # X a vector (n) or a matrix (n x d) for the additive part.
     # nknots number of internal knots
     # knots specific internal knots
+
 
     n <- length(y)
     d <- dim(X)[2]
@@ -436,7 +476,7 @@ plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=
     }
 
     if( is.null(nknots) ){
-      AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
+      AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit, seed=seed)
       nknots <- AUX$nknots
       nbasis <- AUX$nbasis
       kj <- AUX$kj
@@ -459,6 +499,8 @@ plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=
       Xspline <- cbind(Xspline,Mat.X[[ell]])
     }
     nMat <- dim(Mat.X[[ell]])[2]
+
+    set.seed(seed)
     sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
     xdesign <- sal$x
     sigma.hat <- sal$s
@@ -527,13 +569,49 @@ plam.rob.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=
     }
 
     is.zero <- c(abs(alpha.hat)<bound.control,abs(coef.lin)<bound.control,normgammaj<bound.control)
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
-    return(salida)
-  }
+
+
+    if(is.null(np.point)){
+      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
+      return(salida)
+    }else{
+      if(is.null(dim(np.point))){
+        if(q==1){
+          prediccion <- punto <- as.matrix(np.point)
+        }else{
+          prediccion <- punto <- t(as.matrix(np.point))
+        }
+      }else{
+        prediccion <- punto <- np.point
+      }
+      np <- dim(punto)[1]
+      Mat.X.new <- as.list(rep(0,d))
+      Xspline.new <- NULL
+      for(ell in 1:d){
+        if(nknots>0){
+          knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+        }else{
+          knots <- NULL
+        }
+        Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+        Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+      }
+
+
+      for(k in 1:np){
+        for(ell in 1:d){
+          aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+          prediccion[,ell] <- aux - correc[ell]
+        }
+      }
+      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
+      return(salida)
+    }
+}
 
 #' Variable selection in classical PLAM with fixed lambdas
 #' @export
-plam.cl.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
+plam.cl.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -642,8 +720,45 @@ plam.cl.vs.lambdas <- function(y, Z, X, lambdas1, lambdas2, nknots=NULL, knots=N
   }
 
   is.zero <- c(abs(alpha.hat)<bound.control,abs(coef.lin)<bound.control,normgammaj<bound.control)
-  salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
-  return(salida)
+
+
+  if(is.null(np.point)){
+    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- punto <- as.matrix(np.point)
+      }else{
+        prediccion <- punto <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- punto <- np.point
+    }
+    np <- dim(punto)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- aux - correc[ell]
+      }
+    }
+    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
+    return(salida)
+  }
+
 }
 
 
@@ -664,7 +779,7 @@ Hj.matrix <- function(Xj, nknots, degree.spline){
 
 #' Selection lambdas with robust BIC criteria
 #' @export
-select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100){
+select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, seed=123){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -688,7 +803,7 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
   }
 
   if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
+    AUX <- select.nknots.rob(y=y, Z=Z, X=X, degree.spline=degree.spline, method=method, maxit=maxit, seed=seed)
     nknots <- AUX$nknots
     nbasis <- AUX$nbasis
     kj <- AUX$kj
@@ -734,7 +849,7 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     #print(i)
     lambdas1 <- rep(grilla[i,1],q+1)
     lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.rob.vs.lambdas(y, Z, X, lambdas1, lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+    AUX2 <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER, seed=seed)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     xdesign <- AUX2$xdesign
@@ -786,7 +901,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
   }
 
   if( is.null(nknots) ){
-    AUX <- select.nknots.cl(y, Z, X, degree.spline=degree.spline)
+    AUX <- select.nknots.cl(y=y, Z=Z, X=X, degree.spline=degree.spline)
     nknots <- AUX$nknots
     nbasis <- AUX$nbasis
     kj <- AUX$kj
@@ -831,7 +946,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
     #print(i)
     lambdas1 <- rep(grilla[i,1],q+1)
     lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.cl.vs.lambdas(y, Z, X, lambdas1, lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+    AUX2 <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     xdesign <- AUX2$xdesign
@@ -860,7 +975,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.rob.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3), seed=123){
   if(vs=="TRUE"){
     grid.lambda1 <- seq(0,0.5,0.1)
     grid.lambda2 <- seq(0,0.5,0.1)
@@ -871,13 +986,13 @@ plam.rob.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline
      if(lambda2==0.5){
        grid.lambda1 <- seq(0.5,1,0.1)
        grid.lambda2 <- seq(0.5,1,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, seed=seed)
        lambda1 <- sal$la1
        lambda2 <- sal$la2
      }else{
        grid.lambda1 <- seq(0.5,1,0.1)
        grid.lambda2 <- seq(0,0.5,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, seed=seed)
        lambda1 <- sal$la1
        lambda2 <- sal$la2
      }
@@ -894,11 +1009,11 @@ plam.rob.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline
     #print(lambda2)
     lambdas1 <- sal$lambdas1
     lambdas2 <- sal$lambdas2
-    sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, bound.control = bound.control)
+    sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, np.point = np.point, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, bound.control = bound.control)
     salida <- c(sal,lambda1=list(lambda1), lambda2=list(lambda2))
     return(salida)
   }else{
-    sal <- plam.rob(y=y, Z=Z, X=X, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method)
+    sal <- plam.rob(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method)
     return(sal)
   }
 }
@@ -909,7 +1024,7 @@ plam.rob.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
 #' @export
-plam.cl.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
+plam.cl.vs <- function(y, Z, X, np.point = NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
     grid.lambda1 <- seq(0,0.5,0.1)
     grid.lambda2 <- seq(0,0.5,0.1)
@@ -943,11 +1058,11 @@ plam.cl.vs <- function(y, Z, X, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=
     #print(lambda2)
     lambdas1 <- sal$lambdas1
     lambdas2 <- sal$lambdas2
-    sal <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER, bound.control = bound.control)
+    sal <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, np.point = np.point, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER, bound.control = bound.control)
     salida <- c(sal,lambda1=list(lambda1), lambda2=list(lambda2))
     return(salida)
   }else{
-    sal <- plam.cl(y=y, Z=Z, X=X, nknots=nknots, knots=knots, degree.spline=degree.spline)
+    sal <- plam.cl(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline)
     return(sal)
   }
 }
