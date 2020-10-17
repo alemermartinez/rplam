@@ -99,7 +99,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 #' @examples
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
-# #' @importFrom MASS rlm
+# #' @importFrom robustbase lmrob
 #' @export
 select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
@@ -147,7 +147,17 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
 
     #- Tukey MM estimator -#
-    sal.r <- MASS::rlm(y~Z.aux+Xspline, method=method, maxit=maxit)
+    control <- lmrob.control(trace.level = 0,         # 0
+                             nResample   =  500,      # 500 default
+                             tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
+                             subsampling = 'simple',  #
+                             rel.tol     = 1e-5,      # 1e-7
+                             refine.tol  = 1e-5,      # 1e-7
+                             k.max       = 2e3,       # 200
+                             maxit.scale = maxit,       # 200 #2e3
+                             max.it      = maxit)       # 50 #2e3
+    sal.r  <- lmrob(y ~ Z.aux+Xspline, control = control)
+    #sal.r <- MASS::rlm(y~Z.aux+Xspline, method=method, maxit=maxit)
 
     betas <- as.vector(sal.r$coefficients)
     beta.hat <- betas[-1]
@@ -294,6 +304,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 #' @examples
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
+# #' @importFrom robustbase lmrob
 #' @export
 plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
   # y continuos response variable (n)
@@ -343,7 +354,17 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  sal <- MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
+  control <- lmrob.control(trace.level = 0,         # 0
+                           nResample   =  500,      # 500 default
+                           tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
+                           subsampling = 'simple',  #
+                           rel.tol     = 1e-5,      # 1e-7
+                           refine.tol  = 1e-5,      # 1e-7
+                           k.max       = 2e3,       # 200
+                           maxit.scale = maxit,       # 200 #2e3
+                           max.it      = maxit)       # 50 #2e3
+  sal  <- lmrob(y ~ Z.aux+Xspline, control = control)
+  #MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
   betas <- as.vector(sal$coefficients)
   beta.hat <- betas[-1]
   coef.lin <- betas[2:(q+1)]
