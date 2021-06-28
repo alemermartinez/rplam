@@ -1,4 +1,36 @@
+#' Derivative of Tukey's bi-square loss function.
+#'
+#' This function evaluates the first derivative of Tukey's bi-square loss function.
+#'
+#' This function evaluates the first derivative of Tukey's bi-square loss function.
+#'
+#' @param r a vector of real numbers
+#' @param k a positive tuning constant.
+#'
+#' @return A vector of the same length as \code{x}.
+#'
+#' @author Matias Salibian-Barrera, \email{matias@stat.ubc.ca}, Alejandra Martinez
+#'
+#' @examples
+#' x <- seq(-2, 2, length=10)
+#' psi.tukey(r=x, k = 1.5)
+#'
+#' @export
+#' @import stats graphics
+#' @useDynLib RBF, .registration = TRUE
+psi.tukey <- function(r, k=4.685){
+  u <- abs(r/k)
+  w <- r*((1-u)*(1+u))^2
+  w[u>1] <- 0
+  return(w)
+}
 
+psi.tukey.derivative <- function(r, k=4.685){
+  u <- abs(r/k)
+  w <- ((1-u)*(1+u))^2-4*u^2*((1-u)*(1+u))
+  w[u>1] <- 0
+  return(w)
+}
 
 #' Tukey Loss Function
 #' @export
@@ -419,6 +451,30 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
     return(salida)
   }
 }
+
+
+pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
+  yp <- y[ tmp<-!is.na(y) ]
+  if(is.null(ini)){
+    ini <- median(yp)
+  }
+  corte <- 10
+  iter <- 0
+  n <- length(yp)
+  prob <- rep(1,n)
+  k.h <- 1.345
+  k.t <- 4.685
+  if(typePhi=='Huber'){
+    beta <- .C("huber_pos", as.integer(n), as.double(yp), as.double(ini), as.double(epsilon),
+               as.double(sigma.hat), as.double(prob), as.double(k.h), as.integer(iter.max), salida=as.double(0) )$salida
+  }
+  if(typePhi=='Tukey'){
+    beta <- .C("tukey_pos", as.integer(n), as.double(yp), as.double(ini), as.double(epsilon),
+               as.double(sigma.hat), as.double(prob), as.double(k.t), as.integer(iter.max), salida=as.double(0) )$salida
+  }
+  return(beta)
+}
+
 
 ########################
 #- Variable selection -#
