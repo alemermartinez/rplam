@@ -188,9 +188,10 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
                              k.max       = 2e3,       # 200
                              maxit.scale = maxit,       # 200 #2e3
                              max.it      = maxit)       # 50 #2e3
-    sal.r  <- lmrob(y ~ Z.aux+Xspline, control = control)
-    #sal.r <- MASS::rlm(y~Z.aux+Xspline, method=method, maxit=maxit)
-
+    tmp <- try(lmrob(y ~ Z.aux+Xspline, control = control))
+    #sal.r  <- lmrob(y ~ Z.aux+Xspline, control = control)
+    if( class(tmp)[1] != 'try-error'){ #Comentar esto si no funciona y sacar la def de tmp
+      sal.r <- tmp
     betas <- as.vector(sal.r$coefficients)
     beta.hat <- betas[-1]
     coef.lin <- betas[2:(q+1)]
@@ -209,6 +210,10 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
     desvio.hat <- sal.r$s
     tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
     RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
+    }else{
+      RBIC[nknots+1] <- NA
+    }
+
   }
   posicion <- which.min(RBIC)
   nknots <- posicion-1
