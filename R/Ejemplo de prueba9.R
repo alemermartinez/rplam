@@ -362,10 +362,14 @@ residuos <- (y-fit.rob$prediction)/sigma
 degree.spline <- 2 #Si se elige 3 da aún más grande
 nk.cl.am <- select.nknots.cl.am(Z,X,degree.spline=degree.spline)
 nk.cl.am$nknots
-fit.z <- am.cl(Z,X,degree.spline=degree.spline)
+plot(nk.cl.am$BIC)
+nknots <- 6
+
+fit.z <- am.cl(Z,X,degree.spline=degree.spline, nknots=nknots)
 
 hstar <- as.matrix(fit.z$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
 
+q <- 1
 Atheta <- matrix(0,q,q)
 for(i in 1:n){
   Atheta <- Atheta + psi.tukey.derivative(residuos[i])*(Z[i,]-hstar[i,])%*%t(Z[i,]-hstar[i,])
@@ -395,7 +399,10 @@ residuos <- (y-fit.full.cl$prediction)/sigma
 degree.spline <- 2 #Si se elige 3 da aún más grande
 nk.cl.am <- select.nknots.cl.am(Z,X,degree.spline=degree.spline)
 nk.cl.am$nknots
-fit.z <- am.cl(Z,X,degree.spline=degree.spline)
+plot(nk.cl.am$BIC)
+
+nknots <- 6
+fit.z <- am.cl(Z,X,degree.spline=degree.spline, nknots=nknots)
 
 hstar <- as.matrix(fit.z$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
 
@@ -432,7 +439,9 @@ residuos.del <- (y.del-fit.del.cl$prediction)/sigma.del
 degree.spline <- 2 #Si se elige 3 da aún más grande
 nk.cl.am <- select.nknots.cl.am(Z.del,X.del,degree.spline=degree.spline)
 nk.cl.am$nknots
-fit.z.del <- am.cl(Z.del,X.del,degree.spline=degree.spline)
+plot(nk.cl.am$BIC)
+nknots <- 6
+fit.z.del <- am.cl(Z.del,X.del,degree.spline=degree.spline, nknots=nknots)
 
 hstar.del <- as.matrix(fit.z.del$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
 
@@ -458,38 +467,24 @@ sqrt(SigmaDA.del)/sqrt(n.del)
 
 
 
-
-
-
 ###Prueba estimando h* de forma robusta
 
-degree.spline <- 1 #Si se elige 3 da aún más grande
+##El robusto
+sigma <- fit.rob$sigma.hat
+residuos <- (y-fit.rob$prediction)/sigma
+
+degree.spline <- 2 #Si se elige 3 da aún más grande
+set.seed(1111)
 nk.cl.am <- select.nknots.rob.am(Z,X,degree.spline=degree.spline)
 nk.cl.am$nknots
-fit.z <- am.rob(Z,X,degree.spline=degree.spline)
-AA <- mean((Z-fit.z$prediction)^2)
-AA
+plot(nk.cl.am$RBIC)
 
-#Otra forma de hacer el cálculo
-hstar <- as.matrix(fit.z$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
-AA <- matrix(0,q,q)
-for(i in 1:n){
-  AA <- AA + (Z[i,]-hstar[i,])%*%t(Z[i,]-hstar[i,])
-}
-AA <- AA/n
-det(AA)
-
-SigmaDA <- sigma^2*coef.psi*solve(AA)
-SigmaDA
-
-#Atheta y Dtheta con h* robusto
-degree.spline <- 1 #Si se elige 3 da aún más grande
-
+nknots <- 8
 set.seed(1111)
-fit.z <- am.rob(Z,X,degree.spline=degree.spline)
-fit.z$nknots
+fit.z.rob <- am.rob(Z,X,degree.spline=degree.spline, nknots=nknots)
+fit.z.rob$nknots
 
-hstar <- as.matrix(fit.z$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
+hstar <- as.matrix(fit.z.rob$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
 
 Atheta <- matrix(0,q,q)
 for(i in 1:n){
@@ -508,5 +503,87 @@ Dtheta
 SigmaDA <- sigma^2*solve(Atheta)%*%Dtheta%*%t(solve(Atheta))
 SigmaDA
 
+#Desvío para el paper
+sqrt(SigmaDA)/sqrt(n)
+
+
+
+## Estimador clásico FULL ##
+sigma <- sd(y-fit.full.cl$prediction)
+residuos <- (y-fit.full.cl$prediction)/sigma
+#plot(residuos)
+
+degree.spline <- 2 #Si se elige 3 da aún más grande
+set.seed(1111)
+nk.cl.am <- select.nknots.rob.am(Z,X,degree.spline=degree.spline)
+nk.cl.am$nknots
+plot(nk.cl.am$RBIC)
+
+nknots <- 8
+set.seed(1111)
+fit.z.rob <- am.rob(Z,X,degree.spline=degree.spline, nknots=nknots)
+
+hstar <- as.matrix(fit.z.rob$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
+
+Atheta <- matrix(0,q,q)
+for(i in 1:n){
+  Atheta <- Atheta + 1*(Z[i,]-hstar[i,])%*%t(Z[i,]-hstar[i,])
+}
+Atheta <- Atheta/n
+Atheta
+
+Dtheta <- matrix(0,q,q)
+for(i in 1:n){
+  Dtheta <- Dtheta + ((residuos[i]))^2*(Z[i,]-hstar[i,])%*%t(Z[i,]-hstar[i,])
+}
+Dtheta <- Dtheta/n
+Dtheta
+
+SigmaDA <- sigma^2*solve(Atheta)%*%Dtheta%*%t(solve(Atheta))
+SigmaDA
+
+#Desvío para el paper
+sqrt(SigmaDA)/sqrt(n)
+
+
+## Estimador clásico CLEAN ##
+
+n.del <- length(y.del)
+q <- dim(Z.del)[2]
+
+sigma.del <- sd(y.del-fit.del.cl$prediction)
+residuos.del <- (y.del-fit.del.cl$prediction)/sigma.del
+#plot(residuos)
+
+degree.spline <- 2 #Si se elige 3 da aún más grande
+set.seed(1111)
+nk.cl.am <- select.nknots.rob.am(Z.del,X.del,degree.spline=degree.spline)
+nk.cl.am$nknots
+plot(nk.cl.am$RBIC)
+nknots <- 9
+set.seed(1111)
+fit.z.del <- am.rob(Z.del,X.del,degree.spline=degree.spline, nknots=nknots)
+
+hstar.del <- as.matrix(fit.z.del$prediction) #as.matrix(fit.z$alpha+rowSums(fit.z$g.matrix))
+
+Atheta.del <- matrix(0,q,q)
+for(i in 1:n.del){
+  Atheta.del <- Atheta.del + 1*(Z.del[i,]-hstar.del[i,])%*%t(Z.del[i,]-hstar.del[i,])
+}
+Atheta.del <- Atheta.del/n
+Atheta.del
+
+Dtheta.del <- matrix(0,q,q)
+for(i in 1:n.del){
+  Dtheta.del <- Dtheta.del + ((residuos.del[i]))^2*(Z.del[i,]-hstar.del[i,])%*%t(Z.del[i,]-hstar.del[i,])
+}
+Dtheta.del <- Dtheta.del/n
+Dtheta.del
+
+SigmaDA.del <- sigma.del^2*solve(Atheta.del)%*%Dtheta.del%*%t(solve(Atheta.del))
+SigmaDA.del
+
+#Desvío para el paper
+sqrt(SigmaDA.del)/sqrt(n.del)
 
 
