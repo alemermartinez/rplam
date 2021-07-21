@@ -63,6 +63,11 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
 
+  r <- degree.spline-1
+  if(r<1){
+    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+  }
+
   if(is.factor(Z)){
     q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
     lev.Z <- levels(Z)
@@ -75,8 +80,8 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
     q <- dim(Z)[2]
   }
 
-  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
-  lim.sup.kj <- floor(8+2*n^(1/5))
+  lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+  lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
   lim.sup.nknots <- lim.sup.kj - degree.spline - 1
   lim.inf.nknots <- lim.inf.kj - degree.spline - 1
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
@@ -138,8 +143,13 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
   n <- length(y)
   d <- dim(X)[2]
 
-  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
-  lim.sup.kj <- floor(8+2*n^(1/5))
+  r <- degree.spline-1
+  if(r<1){
+    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+  }
+
+  lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2, degree.spline+1))
+  lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
   lim.sup.nknots <- lim.sup.kj - degree.spline - 1
   lim.inf.nknots <- lim.inf.kj - degree.spline - 1
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
@@ -199,6 +209,10 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
 #' @export
 select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
+  r <- degree.spline-1
+  if(r<1){
+    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+  }
   n <- length(y)
   d <- dim(X)[2]
 
@@ -215,8 +229,8 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
   }
 
 
-  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
-  lim.sup.kj <- floor(8+2*n^(1/5))
+  lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+  lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
   lim.sup.nknots <- lim.sup.kj - degree.spline - 1
   lim.inf.nknots <- lim.inf.kj - degree.spline - 1
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
@@ -304,8 +318,13 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
   d <- dim(X)[2]
   q <- 0
 
-  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
-  lim.sup.kj <- floor(8+2*n^(1/5))
+  r <- degree.spline-1
+  if(r<1){
+    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+  }
+
+  lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2, degree.spline+1))
+  lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
   lim.sup.nknots <- lim.sup.kj - degree.spline - 1
   lim.inf.nknots <- lim.inf.kj - degree.spline - 1
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
