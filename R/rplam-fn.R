@@ -157,6 +157,7 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
   BIC <- rep(0,length(grid.nknots))
 
   for(nknots in grid.nknots){
+
     Mat.X <- as.list(rep(0,d))
     #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
     Xspline <- NULL
@@ -188,10 +189,10 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
     regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
     nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
-    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
+    BIC[nknots-lim.inf.nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
   }
   posicion <- which.min(BIC)
-  nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
+  nknots <- posicion+lim.inf.nknots-1 #Decía "knots" en lugar de decir nknots... creo
 
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
@@ -287,14 +288,14 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
     nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
     desvio.hat <- sal.r$s
     tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
-    RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
+    RBIC[nknots-lim.inf.nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
     }else{
-      RBIC[nknots+1] <- NA
+      RBIC[nknots-lim.inf.nknots+1] <- NA
     }
 
   }
   posicion <- which.min(RBIC)
-  nknots <- posicion-1
+  nknots <- posicion+lim.inf.nknots-1
 
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
@@ -381,14 +382,14 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
       nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
       desvio.hat <- sal.r$s
       tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
-      RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
+      RBIC[nknots-lim.inf.nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
     }else{
-      RBIC[nknots+1] <- NA
+      RBIC[nknots-lim.inf.nknots+1] <- NA
     }
 
   }
   posicion <- which.min(RBIC)
-  nknots <- posicion-1
+  nknots <- posicion+lim.inf.nknots-1
 
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
