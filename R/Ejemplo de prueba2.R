@@ -3,8 +3,8 @@
 install.packages("plm")
 library(plm)
 
-library(devtools)
-install_github("alemermartinez/rplam")
+#library(devtools)
+#install_github("alemermartinez/rplam")
 library(rplam)
 
 library(robustbase)
@@ -74,9 +74,9 @@ sigma <- fit.rob$sigma.hat
 residuos <- (y-fit.rob$prediction)/sigma
 plot(residuos)
 
-mean(psi.tukey(residuos)^2)/(mean(psi.tukey.derivative(residuos)))^2
+coef.psi <- mean(psi.tukey(residuos)^2)/(mean(psi.tukey.derivative(residuos)))^2
 
-mean(psi.tukey(residuos)^2, trim=0.05)/(mean(psi.tukey.derivative(residuos), trim=0.05))^2
+#mean(psi.tukey(residuos)^2, trim=0.05)/(mean(psi.tukey.derivative(residuos), trim=0.05))^2
 
 
 #Cuando reemplazo el promedio por el estimador de Tukey me da 0
@@ -95,20 +95,20 @@ mean(psi.tukey(residuos)^2, trim=0.05)/(mean(psi.tukey.derivative(residuos), tri
 #sal2  <- lmrob(psi.tukey.derivative(residuos) ~ 1, control = control)
 #sal2$coefficients
 
-sigma1 <- mad(psi.tukey(residuos)^2)
-num <- pos.est(psi.tukey(residuos)^2, sigma1, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50)
-sigma2 <- mad(psi.tukey.derivative(residuos))
-den <- (pos.est(psi.tukey.derivative(residuos), sigma2, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50))^2
-coef.psi <- num/den
-coef.psi
+#sigma1 <- mad(psi.tukey(residuos)^2)
+#num <- pos.est(psi.tukey(residuos)^2, sigma1, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50)
+#sigma2 <- mad(psi.tukey.derivative(residuos))
+#den <- (pos.est(psi.tukey.derivative(residuos), sigma2, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50))^2
+#coef.psi <- num/den
+#coef.psi
 
-num <- pos.est(psi.tukey(residuos)^2, sigma1, typePhi="Huber", ini=NULL, epsilon=1e-6, iter.max=50)
-den <- (pos.est(psi.tukey.derivative(residuos), sigma2, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50))^2
-num/den
+#num <- pos.est(psi.tukey(residuos)^2, sigma1, typePhi="Huber", ini=NULL, epsilon=1e-6, iter.max=50)
+#den <- (pos.est(psi.tukey.derivative(residuos), sigma2, typePhi="Tukey", ini=NULL, epsilon=1e-6, iter.max=50))^2
+#num/den
 
 #Chequeo bajo normalidad
-xx <- rnorm(100000,0,1)
-coef.psi <- mean((psi.tukey(xx))^2)/(mean(psi.tukey.derivative(xx)))^2
+#xx <- rnorm(100000,0,1)
+#coef.psi <- mean((psi.tukey(xx))^2)/(mean(psi.tukey.derivative(xx)))^2
 
 hstar <- as.matrix(colMeans(Z.aux))
 q <- 4
@@ -132,7 +132,7 @@ for(j in 1:q){
 }
 intervalos
 
-zalpha <- qnorm(0.95,0,1)
+zalpha <- qnorm(0.90,0,1)
 intervalos <- matrix(0,q,2)
 for(j in 1:q){
   lim_inf <- beta.hat[j]-zalpha*sqrt(SigmaDA[j,j])/sqrt(n)
