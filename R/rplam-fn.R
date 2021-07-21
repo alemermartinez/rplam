@@ -53,7 +53,7 @@ my.norm.2 <- function(x){
 }
 
 
-#' Classical knot selection
+#' Classical knot selection for plam
 # #' @importFrom splines bs
 # #' @importFrom stats lm
 #' @examples
@@ -127,7 +127,71 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 }
 
 
-#' Robust knot selection
+#' Classical knot selection for additive models
+# #' @importFrom splines bs
+# #' @importFrom stats lm
+#' @examples
+#' x <- seq(-2, 2, length=10)
+#' @export
+select.nknots.cl.am <- function(y,X,degree.spline=3){
+  q <- 0
+  n <- length(y)
+  d <- dim(X)[2]
+
+  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
+  lim.sup.kj <- floor(8+2*n^(1/5))
+  lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+  lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+  grid.nknots <- lim.inf.nknots:lim.sup.nknots
+
+  BIC <- rep(0,length(grid.nknots))
+
+  for(nknots in grid.nknots){
+    Mat.X <- as.list(rep(0,d))
+    #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+    Xspline <- NULL
+    for (ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+      Xspline <- cbind(Xspline,Mat.X[[ell]])
+    }
+    nMat <- dim(Mat.X[[ell]])[2]
+
+    sal <- stats::lm(y~Xspline)
+    betas <- as.vector(sal$coefficients)
+    beta.hat <- betas[-1]
+    coef.lin <- betas[2:(q+1)]
+    coef.spl <- betas[(q+2):(1+q+nMat*d)]
+    alpha.hat <- betas[1]
+
+    gs.hat <- matrix(0,n,d)
+    for(ell in 1:d){
+      aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+      gs.hat[,ell] <- aux - mean(aux)
+    }
+
+    regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+
+    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
+    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
+  }
+  posicion <- which.min(BIC)
+  nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
+
+  nbasis <- d*(nknots + degree.spline)
+  kj <- nknots + degree.spline
+  salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = nbasis, kj=kj)
+  return(salida)
+}
+
+
+
+#' Robust knot selection for plam
 #' @examples
 #' x <- seq(-2, 2, length=10)
 # #' @importFrom splines bs
@@ -227,6 +291,96 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
 }
 
+
+#' Robust knot selection for plam
+#' @examples
+#' x <- seq(-2, 2, length=10)
+# #' @importFrom splines bs
+# #' @importFrom robustbase lmrob
+#' @export
+select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
+
+  n <- length(y)
+  d <- dim(X)[2]
+  q <- 0
+
+  lim.inf.kj <- ceiling(max(n^(1/5)/2,4))
+  lim.sup.kj <- floor(8+2*n^(1/5))
+  lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+  lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+  grid.nknots <- lim.inf.nknots:lim.sup.nknots
+
+  RBIC <- rep(0,length(grid.nknots))
+
+  for(nknots in grid.nknots){
+    Mat.X <- as.list(rep(0,d))
+    #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+    Xspline <- NULL
+    for (ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+      Xspline <- cbind(Xspline,Mat.X[[ell]])
+    }
+    nMat <- dim(Mat.X[[ell]])[2]
+    #dim(Xspline)[2]/4
+
+
+
+    #- Tukey MM estimator -#
+    control <- lmrob.control(trace.level = 0,         # 0
+                             nResample   =  500,      # 500 default
+                             tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
+                             subsampling = 'simple',  #
+                             rel.tol     = 1e-5,      # 1e-7
+                             refine.tol  = 1e-5,      # 1e-7
+                             k.max       = 2e3,       # 200
+                             maxit.scale = maxit,       # 200 #2e3
+                             max.it      = maxit)       # 50 #2e3
+    tmp <- try(lmrob(y ~ Xspline, control = control))
+    #sal.r  <- lmrob(y ~ Z.aux+Xspline, control = control)
+    if( class(tmp)[1] != 'try-error'){ #Comentar esto si no funciona y sacar la def de tmp
+      sal.r <- tmp
+      betas <- as.vector(sal.r$coefficients)
+      beta.hat <- betas[-1]
+      coef.lin <- betas[2:(q+1)]
+      coef.spl <- betas[(q+2):(1+q+nMat*d)]
+      alpha.hat <- betas[1]
+
+      gs.hat <- matrix(0,n,d)
+      for(ell in 1:d){
+        aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        gs.hat[,ell] <- aux - mean(aux)
+      }
+
+      regresion.hat.r <- stats::predict(sal.r) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+
+      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
+      desvio.hat <- sal.r$s
+      tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
+      RBIC[nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
+    }else{
+      RBIC[nknots+1] <- NA
+    }
+
+  }
+  posicion <- which.min(RBIC)
+  nknots <- posicion-1
+
+  nbasis <- d*(nknots + degree.spline)
+  kj <- nknots + degree.spline
+
+  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = nbasis, kj = kj)
+  return(salida)
+
+
+}
+
+
 #' Classical Partial Linear Additive Model
 # #' @importFrom splines bs
 # #' @importFrom stats lm
@@ -283,6 +437,9 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 
   sal <- stats::lm(y~Z.aux+Xspline)
   betas <- as.vector(sal$coefficients)
+  #Arreglo de NA's
+  betas[is.na(betas)] <- rep(0,sum(is.na(betas)))
+
   beta.hat <- betas[-1]
   coef.lin <- betas[2:(q+1)]
   coef.spl <- betas[(q+2):(1+q+nMat*d)]
@@ -332,6 +489,114 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
       }
     }
     salida <- list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    return(salida)
+  }
+}
+
+
+#' Classical Additive Model
+# #' @importFrom splines bs
+# #' @importFrom stats lm
+#' @examples
+#' x <- seq(-2, 2, length=10)
+#' @export
+am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3){
+  # y continuos response variable (n)
+  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
+  # In case it is a cathegorical variable, class of Z should be 'factor'.
+  # X a vector (n) or a matrix (n x d) for the additive part.
+  # nknots number of internal knots
+  # knots specific internal knots
+
+  n <- length(y)
+  d <- dim(X)[2]
+  q <- 0
+
+  if( is.null(nknots) ){
+    AUX <- select.nknots.cl.am(y,X,degree.spline=degree.spline)
+    nbasis <- AUX$nbasis
+    nknots <- AUX$nknots
+    kj <- AUX$kj
+  }else{
+    nbasis <- d*(nknots + degree.spline)
+    kj <- nknots + degree.spline
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+  Xspline <- NULL
+  for (ell in 1:d){
+    if(nknots>0){
+      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+    }else{
+      knots <- NULL
+    }
+    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+  }
+  nMat <- dim(Mat.X[[ell]])[2]
+
+  sal <- stats::lm(y~Xspline)
+  betas <- as.vector(sal$coefficients)
+  #Arreglo de NA's
+  betas[is.na(betas)] <- rep(0,sum(is.na(betas)))
+
+  beta.hat <- betas[-1]
+  #coef.lin <- betas[2:(q+1)]
+  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  alpha.hat <- betas[1]
+
+  gs.hat <- matrix(0,n,d)
+  correc <- rep(0,d)
+  for(ell in 1:d){
+    if(length((nMat*(ell-1)+1):(nMat*ell))!=1){
+      aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+      correc[ell] <- mean(aux)
+      gs.hat[,ell] <- aux - mean(aux)
+    }else{
+      aux <- Xspline[,(nMat*(ell-1)+1):(nMat*ell)] * coef.spl[(nMat*(ell-1)+1):(nMat*ell)]
+      correc[ell] <- mean(aux)
+      gs.hat[,ell] <- aux - mean(aux)
+    }
+  }
+
+  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+
+  if(is.null(np.point)){
+    salida <- list(prediction=regresion.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- punto <- as.matrix(np.point)
+      }else{
+        prediccion <- punto <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- punto <- np.point
+    }
+    np <- dim(punto)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- aux - correc[ell]
+      }
+    }
+    salida <- list(prediction=regresion.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
     return(salida)
   }
 }
@@ -456,6 +721,123 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
     return(salida)
   }
 }
+
+
+#' Robust Additive Model
+#' @examples
+#' x <- seq(-2, 2, length=10)
+# #' @importFrom splines bs
+# #' @importFrom robustbase lmrob
+#' @export
+am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
+  # y continuos response variable (n)
+  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
+  # In case it is a cathegorical variable, class of Z should be 'factor'.
+  # X a vector (n) or a matrix (n x d) for the additive part.
+  # nknots number of internal knots
+  # knots specific internal knots
+
+  n <- length(y)
+  d <- dim(X)[2]
+  q <- 0
+
+  if( is.null(nknots) ){
+    AUX <- select.nknots.rob.am(y, X, degree.spline=degree.spline, method=method, maxit=maxit)
+    nknots <- AUX$nknots
+    nbasis <- AUX$nbasis
+    kj <- AUX$kj
+  }else{
+    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
+  Xspline <- NULL
+  for (ell in 1:d){
+    if(nknots>0){
+      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+    }else{
+      knots <- NULL
+    }
+    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+  }
+  nMat <- dim(Mat.X[[ell]])[2]
+
+  control <- lmrob.control(trace.level = 0,         # 0
+                           nResample   =  500,      # 500 default
+                           tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
+                           subsampling = 'simple',  #
+                           rel.tol     = 1e-5,      # 1e-7
+                           refine.tol  = 1e-5,      # 1e-7
+                           k.max       = 2e3,       # 200
+                           maxit.scale = maxit,       # 200 #2e3
+                           max.it      = maxit)       # 50 #2e3
+  sal  <- lmrob(y ~ Xspline, control = control)
+  #MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
+  betas <- as.vector(sal$coefficients)
+  beta.hat <- betas[-1]
+  #coef.lin <- betas[2:(q+1)]
+  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  alpha.hat <- betas[1]
+  sigma.hat <- sal$s
+
+  gs.hat <- matrix(0,n,d)
+  correc <- rep(0,d)
+  for(ell in 1:d){
+    if(length((nMat*(ell-1)+1):(nMat*ell))!=1){
+      aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+      correc[ell] <- mean(aux)
+      gs.hat[,ell] <- aux - mean(aux)
+    }else{
+      aux <- Xspline[,(nMat*(ell-1)+1):(nMat*ell)] * coef.spl[(nMat*(ell-1)+1):(nMat*ell)]
+      correc[ell] <- mean(aux)
+      gs.hat[,ell] <- aux - mean(aux)
+    }
+  }
+
+  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+
+  if(is.null(np.point)){
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- punto <- as.matrix(np.point)
+      }else{
+        prediccion <- punto <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- punto <- np.point
+    }
+    np <- dim(punto)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+      if(nknots>0){
+        knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      }else{
+        knots <- NULL
+      }
+      Mat.X.new[[ell]] <- splines::bs( punto[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- aux - correc[ell]
+      }
+    }
+    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    return(salida)
+  }
+}
+
 
 
 pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
