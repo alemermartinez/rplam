@@ -1,6 +1,3 @@
-library(robustbase)
-library("fda")
-
 #' Derivative of Tukey's bi-square loss function.
 #'
 #' This function evaluates the first derivative of Tukey's bi-square loss function.
@@ -19,7 +16,7 @@ library("fda")
 #' psi.tukey(r=x, k = 1.5)
 #'
 #' @export
-#' @import stats graphics
+#' @import stats graphics fda robustbase
 #' @useDynLib RBF, .registration = TRUE
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
@@ -65,8 +62,6 @@ my.norm.2 <- function(x){
 
 
 #' Classical knot selection for plam
-# #' @importFrom splines bs
-# #' @importFrom stats lm
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
@@ -167,8 +162,6 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
 
 #' Classical knot selection for additive models
-# #' @importFrom splines bs
-# #' @importFrom stats lm
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
@@ -260,8 +253,6 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
 #' Robust knot selection for plam
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
-# #' @importFrom robustbase lmrob
 #' @export
 select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
@@ -387,8 +378,6 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 #' Robust knot selection for plam
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
-# #' @importFrom robustbase lmrob
 #' @export
 select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
 
@@ -500,8 +489,6 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
 
 
 #' Classical Partial Linear Additive Model
-# #' @importFrom splines bs
-# #' @importFrom stats lm
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
@@ -661,8 +648,6 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 
 
 #' Classical Additive Model
-# #' @importFrom splines bs
-# #' @importFrom stats lm
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
@@ -817,8 +802,6 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3)
 #' Robust Partial Linear Additive Model
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
-# #' @importFrom robustbase lmrob
 #' @export
 plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
   # y continuos response variable (n)
@@ -983,8 +966,6 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
 #' Robust Additive Model
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
-# #' @importFrom robustbase lmrob
 #' @export
 am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM"){
   # y continuos response variable (n)
@@ -1838,7 +1819,6 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
 #' Robust Partial Linear Additive Model with Variable Selection
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
 #' @export
 plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
@@ -1887,7 +1867,6 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL
 #' Classical Partial Linear Additive Model with Variable Selection
 #' @examples
 #' x <- seq(-2, 2, length=10)
-# #' @importFrom splines bs
 #' @export
 plam.cl.vs <- function(y, Z, X, np.point = NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
