@@ -16,7 +16,10 @@
 #' psi.tukey(r=x, k = 1.5)
 #'
 #' @export
-#' @import stats graphics fda robustbase graphics
+#' @importFrom stats lm
+#' @importFrom fda getbasismatrix
+#' @importFrom fda create.bspline.basis
+#' @importFrom robustbase lmrob
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
   w <- r*((1-u)*(1+u))^2
@@ -1131,7 +1134,7 @@ pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
 #' SCAD penalty function
 #' @examples
 #' x <- seq(-5, 5, length=100)
-#' scad.p(x)
+#' scad.p(x, lambda=0.5)
 #' @export
 scad.p <- function(x, lambda, a=3.7){
   x <- as.vector(x)
@@ -1140,11 +1143,12 @@ scad.p <- function(x, lambda, a=3.7){
   for(i in 1:nt){
     if(abs(x[i])<= lambda){
       sal[i] <- lambda*abs(x[i])
-    }
-    if( (lambda<abs(x[i])) & (abs(x[i])<=a*lambda) ){
-    sal[i] <- -(x^2-2*a*lambda*abs(x[i])+lambda^2)/(2*(a-1))
     }else{
-      sal[i] <- (a+1)*lambda^2/2
+      if( (lambda<abs(x[i])) & (abs(x[i])<= a*lambda) ){
+        sal[i] <- -(x[i]^2-2*a*lambda*abs(x[i])+lambda^2)/(2*(a-1))
+      }else{
+        sal[i] <- (a+1)*lambda^2/2
+        }
     }
   }
   return(sal)
