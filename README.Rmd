@@ -17,37 +17,19 @@ install_github("alemermartinez/rplam")
 library(rplam)
 ```
 
-We will use the Air Quality data set available in <code>R</code>.
+We will use the Boston housing data set available in <code>R</code>.
 ```{r loading data}
-data(airquality)
-x <- airquality
-x <- x[ complete.cases(x), ]
-x <- x[, c('Ozone', 'Solar.R', 'Wind', 'Temp','Month')]
-y <- as.vector(x$Ozone)
-X <- as.matrix(x[, c('Solar.R', 'Wind', 'Temp')])
-Z <- as.matrix(x[, 'Month'])
+library(MASS)
+attach(Boston)
+str(Boston)
+y <- medv
+Z <- as.matrix(ptratio)
+X <- cbind(rm, log(tax), log(lstat))
 ```
-
-As the \code{Z} is taken as a categorical variable, we convert it into a factor variable.
-```{r Z factor}
-Z <- as.factor(Z)
-```
-
 
 The degree selected for the spline basis is 3 for the three additive functions.
 ```{r spline degree}
 degree.spline <- 3
-```
-
-The number of internal knots selected by the BIC criteria for the classical estimator is 9.
-```{r number of knots classical}
-nk.cl <- select.nknots.cl(y,Z,X,degree.spline=degree.spline)
-nk.cl$nknots
-```
-And so is the number of internal knots selected using the RBIC criteria used for the robust proposal.
-```{r number of knots robust}
-nk.rob <- select.nknots.rob(y,Z,X,degree.spline=degree.spline)
-nk.rob$nknots
 ```
 
 Classical estimation of a partially linear additive model
@@ -55,17 +37,27 @@ Classical estimation of a partially linear additive model
 fit.full.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
 ```
 and the robust proposal
-```{r plam.rob}
+```{r semilla, echo=FALSE}
+set.seed(111)
+```
+```{r plam.rob, warning=FALSE}
 fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
 ```
-When no number of internal knots is specified, functions select.knots.cl or select.knots.rob, respectively, is used.
 
+The number of terms for the approximation of the additive functions selected by the BIC criteria used for the classical approach is
+```{r number of terms classical}
+fit.full.cl$kj
+```
+while for the robust proposal that uses the robust BIC criteria is algo
+```{r number of terms robust}
+fit.rob$kj
+```
 The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
 ```{r echo=FALSE, results='asis'}
-col2 <- c(fit.full.cl$alpha,fit.full.cl$coef.lin)
-col3 <- c(fit.rob$alpha,fit.rob$coef.lin)
+col2 <- round(c(fit.full.cl$coef.const,fit.full.cl$coef.lin),4)
+col3 <- round(c(fit.rob$coef.const,fit.rob$coef.lin),4)
 tabla.b1 <- cbind(col2,col3)
-row.names(tabla.b1) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
+row.names(tabla.b1) <- c('$\\beta_0$', "$\\beta_1$")
 colnames(tabla.b1) <- c("Classical","Robust")
 library(knitr)
 kable(tabla.b1,caption = "Table 1")
@@ -73,38 +65,44 @@ kable(tabla.b1,caption = "Table 1")
 
 The following three plots correspond to the classical (in red and dashed line) and robust (in blue and solid line) fits for the additive functions with their respectively partial residuals.
 ```{r ggplot1, echo=FALSE,warning=FALSE}
+n <- length(y)
 DF2 <- as.data.frame(list(
   rbind(X,X),
-  c(fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1])),
-  c(fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-2]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-2])),
-  c(fit.full.cl$y  - fit.full.cl$Z%*%fit.full.cl$coef.lin - fit.full.cl$alpha - rowSums(fit.full.cl$g.matrix[,-3]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3])),
   rbind(fit.full.cl$g.matrix,fit.rob$g.matrix),
-  c(rep("Classical",111),rep("Robust",111))
+  c(rep("Classical",n),rep("Robust",n))
 ))
-names(DF2) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
-
+names(DF2) <- c("x1","x2","x3","re.x1", "re.x2","re.x3", "gx1", "gx2","gx3","Fit")
 library(ggplot2)
-ggplot(DF2,aes(x=Temp,y=re.T,color=Fit)) +
+DF2.rojo <- as.data.frame(list(
+  rbind(X),
+  rbind(fit.full.cl$g.matrix),
+  c(rep("Classical",n))
+))
+names(DF2.rojo) <- c("x1","x2","x3","gx1","gx2","gx3","Fit")
+color.fit <- c("red","blue")
+
+ggplot(DF2,aes(x=x1,y=re.x1,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
+  geom_line(aes(x=x1,y=gx1),size=1.3,alpha=1,linetype=c(rep(2,n),rep(1,n)))+
+  scale_color_manual(values = c("#bb0c00","#0052bb"))+
+  theme(
+    axis.title.y=element_blank()
+)
+
+ggplot(DF2,aes(x=x2,y=re.x2,color=Fit)) +
+  geom_point(alpha=0.5)+
+  geom_line(aes(x=x2,y=gx2),size=1.3,alpha=1,linetype=c(rep(2,n),rep(1,n)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
   theme(
     axis.title.y=element_blank()
   )
 
-
-ggplot(DF2,aes(x=Wind,y=re.W,color=Fit)) +
+ggplot(DF2,aes(x=x3,y=re.x3,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
-  scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  theme(
-    axis.title.y=element_blank()
-  )
-
-
-ggplot(DF2,aes(x=Solar.R,y=re.S,color=Fit)) +
-  geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(2,111),rep(1,111)))+
+  geom_line(aes(x=x3,y=gx3),size=1.3,alpha=1,linetype=c(rep(2,n),rep(1,n)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
   theme(
     axis.title.y=element_blank()
@@ -112,121 +110,94 @@ ggplot(DF2,aes(x=Solar.R,y=re.S,color=Fit)) +
 
 ```
 
-It seems curves obtained for each additive component are quite differents. For this reason, we are going to study the residuals obtained by the robust estimator.
+Even though the shape of the estimates corresponding to the second additive component is similar for both estimators, differences are observed in the estimation of the first and third additive component. To identify potential outliers, we use the boxplot of the residuals obtained by the robust fit.
 ```{r residuals1}
 res.rob <- y-fit.rob$prediction
-summary(res.rob)
-```
-
-```{r cowplot, echo=FALSE, results='hide', cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, message=FALSE}
-library(cowplot)
-```
-```{r residuals2, echo=FALSE,warning=FALSE}
 DF3 <- as.data.frame(list(
-  1:111,
+  1:n,
   y-fit.rob$prediction
 ))
 names(DF3) <- c("Position","Residuals")
-
-p1 <- ggplot(DF3,aes(y=Residuals))+
+ggplot(DF3,aes(y=Residuals))+
   geom_boxplot(fill='#0052bb',alpha=0.5)+
   theme(
     axis.text.x=element_blank()
   )
-
-p2 <- ggplot(DF3,aes(x=Position,y=Residuals))+
-  geom_point(alpha=0.8,color="#0052bb")+
-  geom_abline(intercept = 0,slope=0)+
-  theme(
-    axis.title.x=element_blank(),
-    axis.title.y=element_blank(),
-    axis.text.x=element_blank()
-  )
-
-p3 <- ggplot(DF3,aes(sample=Residuals))+
-  geom_qq(color="#0052bb",alpha=0.8)+stat_qq_line()+
-  theme(
-    axis.title.x=element_blank(),
-    axis.text.x=element_blank()
-  )
-
-plot_grid(p1, p2, p3)
 ```
-
 The residuals detected as outliers are:
-```{r boxplotinfo, echo=FALSE,warning=FALSE}
-p1.info <- ggplot_build(p1)$data[[1]]
+```{r boxplot}
+names(res.rob) <- 1:n
+outliers <- as.numeric(names(boxplot(res.rob, plot=FALSE)$out))
+outliers
 ```
-```{r outliers}
-p1.info$outliers[[1]]
-```
-which correspond to observations 23, 34, 53 and 77. Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
-
+Highlighting the partial residuals of these four observations (in pink) we obtain the following plots:
 ```{r ggplot-highlighted, echo=FALSE,warning=FALSE}
 DF3 <- as.data.frame(list(
   X,
-  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1]),
-  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-2]),
-  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3]),
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1]),
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2]),
+  fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3]),
   rbind(fit.rob$g.matrix),
-  rep("Robust",111)
+  rep("Robust",n)
 ))
-names(DF3) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
+names(DF3) <- c("x1","x2","x3","re.x1", "re.x2","re.x3", "gx1","gx2","gx3","Fit")
 
 DF3point <- as.data.frame(list(
-  X[c(23,34,53,77),],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1]))[c(23,34,53,77),],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-2]))[c(23,34,53,77),],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3]))[c(23,34,53,77),]
+  X[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3]))[outliers,]
 )
 )
-names(DF3point) <- c("Solar.x","Wind.x","Temp.x","re.Solar","re.Wind","re.Temp")
+names(DF3point) <- c("x1.x","x2.x","x3.x","re.x1","re.x2","re.x3")
 
-ggplot(DF3,aes(x=Temp,y=re.T,color=Fit)) +
+ggplot(DF3,aes(x=x1,y=re.x1,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=x1,y=gx1),size=1.3,alpha=1,linetype=c(rep(1,n)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=Temp.x,y=re.Temp),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x1.x,y=re.x1),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF3,aes(x=Wind,y=re.W,color=Fit)) +
+ggplot(DF3,aes(x=x2,y=re.x2,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=x2,y=gx2),size=1.3,alpha=1,linetype=c(rep(1,n)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=Wind.x,y=re.Wind),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x2.x,y=re.x2),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF3,aes(x=Solar.R,y=re.S,color=Fit)) +
+ggplot(DF3,aes(x=x3,y=re.x3,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(1,111)))+
+  geom_line(aes(x=x3,y=gx3),size=1.3,alpha=1,linetype=c(rep(1,n)))+
   scale_color_manual(values = c("#0052bb"))+
-  geom_point(data=DF3point,aes(x=Solar.x,y=re.Solar),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x3.x,y=re.x3),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
-
 ```
 
 
 Now, we remove these four observations from the original data set and re-calculate the classical estimator
 ```{r re-fit}
-out.pos <- c(23,34,53,77)
-y.del <- y[-out.pos]
-X.del <- X[-out.pos,]
-Z.del <- Z[-out.pos]
+y.del <- y[-outliers]
+X.del <- X[-outliers,]
+Z.del <- as.matrix(Z[-outliers,])
 
 fit.del.cl <- plam.cl(y.del, Z.del, X.del)
 ```
+The same number of terms for the approximations were selected:
+```{r kj classical new}
+fit.del.cl$kj
+```
 
-New estimated linear coefficients with the previuos ones are shown in the following table.
+New estimated linear coefficients with the previous ones are shown in the following table.
 ```{r echo=FALSE, results='asis'}
-col4 <- c(fit.del.cl$alpha,fit.del.cl$coef.lin)
+col4 <- round(c(fit.del.cl$coef.const,fit.del.cl$coef.lin),4)
 tabla.b1.aux <- cbind(tabla.b1,col4)
-row.names(tabla.b1.aux) <- c('$\\beta_0$', "$\\beta_1$", "$\\beta_2$","$\\beta_3$","$\\beta_4$")
+row.names(tabla.b1.aux) <- c('$\\beta_0$', "$\\beta_1$")
 colnames(tabla.b1.aux) <- c("Classical","Robust","Classical on clean data")
 kable(tabla.b1.aux,caption = "Table 2")
 ```
@@ -236,40 +207,39 @@ The following plots correspond to the new curves obtained with the classical fit
 ```{r ggplot-final, echo=FALSE,warning=FALSE}
 DF4 <- as.data.frame(list(
   rbind(X.del,X),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$alpha - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-1])),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$alpha - rowSums(fit.del.cl$g.matrix[,-2]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-2])),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$alpha - rowSums(fit.del.cl$g.matrix[,-3]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$alpha - rowSums(fit.rob$g.matrix[,-3])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-2]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-3]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3])),
   rbind(fit.del.cl$g.matrix,fit.rob$g.matrix),
-  c(rep("Classical",107),rep("Robust",111))
+  c(rep("Classical",n-length(outliers)),rep("Robust",n))
 ))
-names(DF4) <- c("Solar.R","Wind","Temp","re.S", "re.W", "re.T", "gS","gW","gT","Fit")
+names(DF4) <- c("x1","x2","x3","re.x1", "re.x2","re.x3", "gx1","gx2","gx3","Fit")
 
-ggplot(DF4,aes(x=Temp,y=re.T,color=Fit)) +
+ggplot(DF4,aes(x=x1,y=re.x1,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Temp,y=gT),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=x1,y=gx1),size=1.3,alpha=1,linetype=c(rep(2,n-length(outliers)),rep(1,n)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=Temp.x,y=re.Temp),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x1.x,y=re.x1),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF4,aes(x=Wind,y=re.W,color=Fit)) +
+ggplot(DF4,aes(x=x2,y=re.x2,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Wind,y=gW),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=x2,y=gx2),size=1.3,alpha=1,linetype=c(rep(2,n-length(outliers)),rep(1,n)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=Wind.x,y=re.Wind),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x2.x,y=re.x2),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
 
-ggplot(DF4,aes(x=Solar.R,y=re.S,color=Fit)) +
+ggplot(DF4,aes(x=x3,y=re.x3,color=Fit)) +
   geom_point(alpha=0.5)+
-  geom_line(aes(x=Solar.R,y=gS),size=1.3,alpha=1,linetype=c(rep(2,107),rep(1,111)))+
+  geom_line(aes(x=x3,y=gx3),size=1.3,alpha=1,linetype=c(rep(2,n-length(outliers)),rep(1,n)))+
   scale_color_manual(values = c("#bb0c00","#0052bb"))+
-  geom_point(data=DF3point,aes(x=Solar.x,y=re.Solar),col='#FF33E3',size=2)+
+  geom_point(data=DF3point,aes(x=x3.x,y=re.x3),col='#FF33E3',size=2)+
   theme(
     axis.title.y=element_blank()
   )
-
 ```
 
