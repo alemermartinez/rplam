@@ -16,8 +16,7 @@
 #' psi.tukey(r=x, k = 1.5)
 #'
 #' @export
-#' @import stats graphics fda robustbase
-#' @useDynLib RBF, .registration = TRUE
+#' @import stats graphics fda robustbase graphics
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
   w <- r*((1-u)*(1+u))^2
@@ -110,15 +109,15 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X[,ell], base.beta)
+      aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -199,15 +198,15 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X[,ell], base.beta)
+      aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -300,15 +299,15 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X[,ell], base.beta)
+      aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -414,15 +413,15 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X[,ell], base.beta)
+      aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -540,15 +539,15 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -612,15 +611,15 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X.new[,ell], base.beta)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -687,15 +686,15 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3)
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -764,15 +763,15 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3)
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X.new[,ell], base.beta)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -850,15 +849,15 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -929,15 +928,15 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X.new[,ell], base.beta)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -1067,15 +1066,15 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X.new[,ell], base.beta)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -1223,15 +1222,15 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X[,ell], base.beta)
+      aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -1343,15 +1342,15 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
         }
 
         #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-        base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+        base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                             norder = (degree.spline+1),
                                             breaks = nodos.spl)
-        aux <- getbasismatrix(X.new[,ell], base.beta)
+        aux <- fda::getbasismatrix(X.new[,ell], base.beta)
         naux <- dim(aux)[2]
         #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
         #Centrado con la integral
-        spl.center   <- getbasismatrix(grilla.tes, base.beta)
+        spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
         spl.final <- aux
         for (j in 1:naux){
           centroj=mean(spl.center[,j])
@@ -1426,15 +1425,15 @@ plam.cl.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknot
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -1539,15 +1538,15 @@ plam.cl.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknot
       }
 
       #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(X.new[,ell], base.beta)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
       #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -1637,15 +1636,15 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -1752,15 +1751,15 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
     }
 
     #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- getbasismatrix(X[,ell], base.beta)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
     #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])

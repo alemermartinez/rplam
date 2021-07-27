@@ -7,7 +7,7 @@ Maintainer: The package maintainer <ale_m_martinez@hotmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: GPL-3 + file LICENSE
-Imports: MASS, splines, stats, robustbase
+Imports: MASS, fda, stats, robustbase
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 Encoding: UTF-8
