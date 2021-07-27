@@ -4,9 +4,19 @@
 \alias{select.rob.lambdas}
 \title{Selection lambdas with robust BIC criteria}
 \usage{
-select.rob.lambdas(y, Z, X, grid.lambda1, grid.lambda2, nknots = NULL,
-  knots = NULL, degree.spline = 3, maxit = 100, method = "MM",
-  MAXITER = 100)
+select.rob.lambdas(
+  y,
+  Z,
+  X,
+  grid.lambda1,
+  grid.lambda2,
+  nknots = NULL,
+  knots = NULL,
+  degree.spline = 3,
+  maxit = 100,
+  method = "MM",
+  MAXITER = 100
+)
 }
 \description{
 Selection lambdas with robust BIC criteria

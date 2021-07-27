@@ -2,10 +2,10 @@
 % Please edit documentation in R/rplam-fn.R
 \name{my.norm.2}
 \alias{my.norm.2}
-\title{Tukey Loss Function}
+\title{Norm 2}
 \usage{
 my.norm.2(x)
 }
 \description{
-Tukey Loss Function
+Norm 2
 }

@@ -2,13 +2,12 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.rob}
 \alias{select.nknots.rob}
-\title{Robust knot selection}
+\title{Robust knot selection for plam}
 \usage{
-select.nknots.rob(y, Z, X, degree.spline = 3, method = "MM",
-  maxit = 100)
+select.nknots.rob(y, Z, X, degree.spline = 3, method = "MM", maxit = 100)
 }
 \description{
-Robust knot selection
+Robust knot selection for plam
 }
 \examples{
 x <- seq(-2, 2, length=10)

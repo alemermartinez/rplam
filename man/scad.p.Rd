@@ -11,5 +11,5 @@ SCAD penalty function
 }
 \examples{
 x <- seq(-5, 5, length=100)
-scad.p(x)
+scad.p(x, lambda=0.5)
 }

@@ -4,8 +4,17 @@
 \alias{select.cl.lambdas}
 \title{Selection lambdas with classical BIC criteria}
 \usage{
-select.cl.lambdas(y, Z, X, grid.lambda1, grid.lambda2, nknots = NULL,
-  knots = NULL, degree.spline = 3, MAXITER = 100)
+select.cl.lambdas(
+  y,
+  Z,
+  X,
+  grid.lambda1,
+  grid.lambda2,
+  nknots = NULL,
+  knots = NULL,
+  degree.spline = 3,
+  MAXITER = 100
+)
 }
 \description{
 Selection lambdas with classical BIC criteria

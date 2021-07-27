@@ -4,9 +4,20 @@
 \alias{plam.rob.vs}
 \title{Robust Partial Linear Additive Model with Variable Selection}
 \usage{
-plam.rob.vs(y, Z, X, np.point = NULL, vs = TRUE, nknots = NULL,
-  knots = NULL, degree.spline = 3, rob.maxit = 100, method = "MM",
-  MAXITER = 100, bound.control = 10^(-3))
+plam.rob.vs(
+  y,
+  Z,
+  X,
+  np.point = NULL,
+  vs = TRUE,
+  nknots = NULL,
+  knots = NULL,
+  degree.spline = 3,
+  rob.maxit = 100,
+  method = "MM",
+  MAXITER = 100,
+  bound.control = 10^(-3)
+)
 }
 \description{
 Robust Partial Linear Additive Model with Variable Selection

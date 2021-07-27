@@ -2,12 +2,12 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.cl}
 \alias{select.nknots.cl}
-\title{Classical knot selection}
+\title{Classical knot selection for plam}
 \usage{
 select.nknots.cl(y, Z, X, degree.spline = 3)
 }
 \description{
-Classical knot selection
+Classical knot selection for plam
 }
 \examples{
 x <- seq(-2, 2, length=10)

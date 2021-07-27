@@ -4,9 +4,19 @@
 \alias{plam.cl.vs.lambdas}
 \title{Variable selection in classical PLAM with fixed lambdas}
 \usage{
-plam.cl.vs.lambdas(y, Z, X, np.point = NULL, lambdas1, lambdas2,
-  nknots = NULL, knots = NULL, degree.spline = 3, MAXITER = 100,
-  bound.control = 10^(-3))
+plam.cl.vs.lambdas(
+  y,
+  Z,
+  X,
+  np.point = NULL,
+  lambdas1,
+  lambdas2,
+  nknots = NULL,
+  knots = NULL,
+  degree.spline = 3,
+  MAXITER = 100,
+  bound.control = 10^(-3)
+)
 }
 \description{
 Variable selection in classical PLAM with fixed lambdas
