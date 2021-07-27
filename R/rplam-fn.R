@@ -20,6 +20,7 @@
 #' @importFrom fda getbasismatrix
 #' @importFrom fda create.bspline.basis
 #' @importFrom robustbase lmrob
+#' @importFrom robustbase lmrob.control
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
   w <- r*((1-u)*(1+u))^2
@@ -327,7 +328,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
 
     #- Tukey MM estimator -#
-    control <- lmrob.control(trace.level = 0,         # 0
+    control <- robustbase::lmrob.control(trace.level = 0,         # 0
                              nResample   =  500,      # 500 default
                              tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                              subsampling = 'simple',  #
@@ -440,7 +441,7 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
 
 
     #- Tukey MM estimator -#
-    control <- lmrob.control(trace.level = 0,         # 0
+    control <- robustbase::lmrob.control(trace.level = 0,         # 0
                              nResample   =  500,      # 500 default
                              tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                              subsampling = 'simple',  #
@@ -873,7 +874,7 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  control <- lmrob.control(trace.level = 0,         # 0
+  control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
                            tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                            subsampling = 'simple',  #
@@ -1006,7 +1007,7 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  control <- lmrob.control(trace.level = 0,         # 0
+  control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
                            tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                            subsampling = 'simple',  #
