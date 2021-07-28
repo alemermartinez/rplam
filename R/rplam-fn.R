@@ -329,7 +329,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
 
 
     #- Tukey MM estimator -#
-    control <- robustbase::robustbase::lmrob.control(trace.level = 0,         # 0
+    control <- robustbase::lmrob.control(trace.level = 0,         # 0
                              nResample   =  500,      # 500 default
                              tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                              subsampling = 'simple',  #
@@ -338,7 +338,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, method="MM", maxit=100){
                              k.max       = 2e3,       # 200
                              maxit.scale = maxit,       # 200 #2e3
                              max.it      = maxit)       # 50 #2e3
-    tmp <- try(robustbase::robustbase::lmrob(y ~ Z.aux+Xspline, control = control))
+    tmp <- try(robustbase::lmrob(y ~ Z.aux+Xspline, control = control))
     #sal.r  <- robustbase::lmrob(y ~ Z.aux+Xspline, control = control)
     if( class(tmp)[1] != 'try-error'){ #Comentar esto si no funciona y sacar la def de tmp
       sal.r <- tmp
@@ -442,7 +442,7 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, method="MM", maxit=100){
 
 
     #- Tukey MM estimator -#
-    control <- robustbase::robustbase::lmrob.control(trace.level = 0,         # 0
+    control <- robustbase::lmrob.control(trace.level = 0,         # 0
                              nResample   =  500,      # 500 default
                              tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                              subsampling = 'simple',  #
@@ -875,7 +875,7 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  control <- robustbase::robustbase::lmrob.control(trace.level = 0,         # 0
+  control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
                            tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                            subsampling = 'simple',  #
@@ -1027,7 +1027,7 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
   }
   nMat <- dim(Mat.X[[ell]])[2]
 
-  control <- robustbase::robustbase::lmrob.control(trace.level = 0,         # 0
+  control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
                            tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
                            subsampling = 'simple',  #
