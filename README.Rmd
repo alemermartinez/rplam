@@ -131,6 +131,7 @@ outliers <- as.numeric(names(boxplot(res.rob, plot=FALSE)$out))
 outliers
 ```
 
+
 Now, we remove these observations from the original data set and re-calculate the classical estimator
 ```{r re-fit}
 y.del <- y[-outliers]
@@ -156,6 +157,14 @@ kable(tabla.b1.aux,caption = "Table 2")
 The following plots correspond to the new curves obtained with the classical fit (in red dashed line) using the data without the potential outliers identified by the robust fit together with the curves obtained by the robust fit on the original data set.
 
 ```{r ggplot-final, echo=FALSE,warning=FALSE}
+DF3point <- as.data.frame(list(
+  X[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3]))[outliers,]
+)
+)
+names(DF3point) <- c("x1.x","x2.x","x3.x","re.x1","re.x2","re.x3")
 DF4 <- as.data.frame(list(
   rbind(X.del,X),
   c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1])),
@@ -193,3 +202,4 @@ ggplot(DF4,aes(x=x3,y=re.x3,color=Fit)) +
     axis.title.y=element_blank()
   )
 ```
+
