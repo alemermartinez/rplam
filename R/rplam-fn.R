@@ -29,6 +29,8 @@ psi.tukey <- function(r, k=4.685){
   return(w)
 }
 
+#' Derivative of the Tukey Loss Function
+#' @export
 psi.tukey.derivative <- function(r, k=4.685){
   u <- abs(r/k)
   w <- ((1-u)*(1+u))^2-4*u^2*((1-u)*(1+u))
