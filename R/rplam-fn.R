@@ -19,8 +19,8 @@
 #' @importFrom stats lm
 #' @importFrom fda getbasismatrix
 #' @importFrom fda create.bspline.basis
-#' @importFrom robustbase robustbase::lmrob
-#' @importFrom robustbase robustbase::lmrob.control
+#' @importFrom robustbase lmrob
+#' @importFrom robustbase lmrob.control
 #' @importFrom splines bs
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
