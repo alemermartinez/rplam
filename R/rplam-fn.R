@@ -21,6 +21,7 @@
 #' @importFrom fda create.bspline.basis
 #' @importFrom robustbase lmrob
 #' @importFrom robustbase lmrob.control
+#' @importFrom splines bs
 psi.tukey <- function(r, k=4.685){
   u <- abs(r/k)
   w <- r*((1-u)*(1+u))^2
@@ -996,13 +997,32 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
+    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+
     if(nknots>0){
-      knots <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
     }else{
-      knots <- NULL
+      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
     }
-    Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    #nMat.X[ell] <- dim(Mat.X[[ell]])[2]
+
+    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+                                             norder = (degree.spline+1),
+                                             breaks = nodos.spl)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
+    naux <- dim(aux)[2]
+    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
+
+    #Centrado con la integral
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+    spl.final <- aux
+    for (j in 1:naux){
+      centroj=mean(spl.center[,j])
+      spl.final[,j]=aux[,j]-centroj
+    }
+    Mat.X[[ell]] <- spl.final[,-1]
+
     Xspline <- cbind(Xspline,Mat.X[[ell]])
   }
   nMat <- dim(Mat.X[[ell]])[2]
