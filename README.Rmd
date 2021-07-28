@@ -296,10 +296,9 @@ SigmaDA.del <- sigma.del^2*solve(AA.del)
 desvio.cl.clean.A <- sqrt(SigmaDA.del)/sqrt(n.del)
 ```
 ```{r tabla final, echo=FALSE}
-pirulo=rbind(tabla.b1.aux[2,], c(desvio.cl.full.A,   desvio.rob.BD, desvio.cl.clean.A))
-tabla.paper.beta= round( pirulo, 4)
-row.names(tabla.paper.beta)=c(  "$\\widehat{\\beta}$", "\\widehat{s}_{\\widehat{\\beta}}")
+tabla2 <- rbind(tabla.b1.aux[2,], c(desvio.cl.full.A,   desvio.rob.BD, desvio.cl.clean.A))
+tabla.paper.beta <- round(tabla2, 4)
+row.names(tabla.paper.beta)=c(  "$\\widehat{\\beta}$", "${\\widehat{s}}_{\\widehat{\\beta}}$")
 colnames(tabla.paper.beta) <- c("Classical","Robust","Classical on clean data")
 kable(tabla.paper.beta,caption = "Estimates and SD")
-
 ```
