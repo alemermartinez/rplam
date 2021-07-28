@@ -159,3 +159,11 @@ outliers identified by the robust fit together with the curves obtained
 by the robust fit on the original data set.
 
 ![](README_files/figure-markdown_github/ggplot-final-1.png)![](README_files/figure-markdown_github/ggplot-final-2.png)![](README_files/figure-markdown_github/ggplot-final-3.png)
+
+Now we estimate the asymptotic standard deviations of the regression
+parameters:
+
+|                   |  Classical|   Robust|  Classical on clean data|
+|:------------------|----------:|--------:|------------------------:|
+| *β̂*               |    -0.5750|  -0.5099|                  -0.4733|
+| *ŝ*<sub>*β̂*</sub> |     0.1078|   0.0149|                   0.0720|
