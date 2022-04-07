@@ -1693,7 +1693,17 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     Mat.X[[ell]] <- spl.final[,-1]
   }
   nMat <- dim(Mat.X[[ell]])[2]
-  sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
+  #sal <- MASS::rlm(y~Z.aux+Xspline ,method=method, maxit=maxit)
+  control <- robustbase::lmrob.control(trace.level = 0,         # 0
+                                       nResample   =  500,      # 500 default
+                                       tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
+                                       subsampling = 'simple',  #
+                                       rel.tol     = 1e-5,      # 1e-7
+                                       refine.tol  = 1e-5,      # 1e-7
+                                       k.max       = 2e3,       # 200
+                                       maxit.scale = maxit,       # 200 #2e3
+                                       max.it      = maxit)       # 50 #2e3
+  sal  <- robustbase::lmrob(y ~ Z.aux+Xspline, control = control)
   xdesign <- sal$x
   sigma.hat <- sal$s
   #Construyo el beta 0
