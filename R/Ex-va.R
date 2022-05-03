@@ -48,7 +48,7 @@ for(i in 1:p){
 #Ahora con selección de variables
 #- Con k y lambdas fijos
 lambdas1 <- rep(0.1,q)
-lambdas2 <- rep(0.2,p)
+lambdas2 <- rep(0.25,p)
 nknots <- 0
 degree.spline <- 3
 maxit <- 100
