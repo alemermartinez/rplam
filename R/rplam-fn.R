@@ -1280,7 +1280,9 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
 
 
     #Construyo el beta 0
-    beta.ini <- as.vector(sal$coefficients)
+    beta.ini.complete <- as.vector(sal$coefficients)
+    beta0 <- sal$coefficients[1]
+    beta.ini <- as.vector(sal$coefficients)[-1]
     #beta.hat <- beta.ini[-1]
     #coef.lin <- beta.ini[2:(q+1)]
     #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
@@ -1292,20 +1294,20 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
     while( (corte>bound.control) & (iter<MAXITER)){
       iter <- iter +1
       #print(iter)
-      regresion.hat <- xdesign%*%beta.ini
+      regresion.hat <- xdesign%*%c(beta0,beta.ini)
       res <- y-regresion.hat
       an <- quantile(abs(res),2*(n^(-1/2)))
-      W <- diag( as.vector(tukey.loss((res)/sigma.hat)/(an+(res)^2) ))
+      W <- diag( as.vector(tukey.loss((res)/sigma.hat)/((an+abs(res))^2) ) ) #Esto lo tenía mal. Decia /(an+(res)^2)
 
       Sigmalambda <- matrix(0,nbetas,nbetas)
-      for(i in 1:(q+1)){
+      for(i in 1:q){ #decia q+1 en lugar de q
         Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])
       }
       for(i in 1:d){
         Hj <- Hj.matrix(X[,i], nknots, degree.spline)
-        gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
+        gammaj <- as.matrix(beta.ini[(q+1+nMat*(i-1)):(nMat*i+q)])
         normgammaj[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
-        Sigmalambda[(q+2+nMat*(i-1)):(nMat*i+(q+1)),(q+2+nMat*(i-1)):(nMat*i+(q+1))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj
+        Sigmalambda[(q+1+nMat*(i-1)):(nMat*i+(q)),(q+1+nMat*(i-1)):(nMat*i+(q))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj
       }
 
       #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
@@ -1313,7 +1315,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       #options(show.error.messages = TRUE)
 
       try.sal <- try(
-        AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
+        AUX <- solve(t(xdesign[,-1])%*%W%*%(xdesign[,-1]) + 1/2*n*Sigmalambda)
         #aa <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
         #print(det(aa))
         #dimaa <- dim(aa)[1]
@@ -1321,7 +1323,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       )
 
       if(class(try.sal)!= 'try-error'){
-        beta1 <- as.vector(AUX%*%t(xdesign)%*%W%*%y)
+        beta1 <- as.vector(AUX%*%t(xdesign[,-1])%*%W%*%(y-beta0)) #y
         corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
         beta.ini <- beta1
       }else{
@@ -1330,10 +1332,10 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       }
     }
 
-    beta.hat <- beta1[-1]
-    coef.lin <- beta1[2:(q+1)]
-    coef.spl <- beta1[(q+2):(1+q+nMat*d)]
-    alpha.hat <- beta1[1]
+    #beta.hat <- beta1[-1]
+    coef.lin <- beta1[1:q] #beta1[2:(q+1)]
+    coef.spl <- beta1[(q+1):(q+nMat*d)]
+    alpha.hat <- beta0
 
     gs.hat <- matrix(0,n,d)
     #correc <- rep(0,d)
@@ -1344,7 +1346,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
     }
 
-    is.zero <- c(abs(alpha.hat)<bound.control,abs(coef.lin)<bound.control,normgammaj<bound.control)
+    is.zero <- c(abs(coef.lin)<bound.control,normgammaj<bound.control)
 
 
     if(is.null(np.point)){
