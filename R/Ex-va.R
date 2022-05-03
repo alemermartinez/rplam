@@ -65,5 +65,27 @@ for(i in 1:p){
   lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
 }
 
+#Ahora con k fijo y seleccionando los lambdas
+grid.la1 <- seq(0,0.2,0.05)
+grid.la2 <- seq(0,0.2,0.05)
+nknots <- 0
+degree.spline <- 3
+maxit <- 100
+MAXITER <- 100
+bound.control <- 10^(-3)
+sal.rob <- plam.rob.vs.lambdas(y, Z, X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots)
+sal.rob$la1
+sal.rob$la2
+sal.rob$coef.const
+sal.rob$coef.lin
+sal.rob$is.zero
+
+#Y ahora que calcule el k también automático
+sal.rob <- plam.rob.vs(y, Z, X)
+sal.rob$la1
+sal.rob$la2
+sal.rob$coef.const
+sal.rob$coef.lin
+sal.rob$is.zero
 
 
