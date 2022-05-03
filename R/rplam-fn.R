@@ -1199,9 +1199,9 @@ scad.d <- function(x, lambda, a=3.7){
   return(sal)
 }
 
-#' Variable selection in robust PLAM with fixed lambdas
+#' Variable selection in robust PLAM with fixed lambdas and fixed nknots
 #' @export
-plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots, degree.spline=3, maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
     # y continuos response variable (n)
     # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
     # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -1225,15 +1225,8 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
       q <- dim(Z)[2]
     }
 
-    if( is.null(nknots) ){
-      AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, method=method, maxit=maxit)
-      nknots <- AUX$nknots
-      nbasis <- AUX$nbasis
-      kj <- AUX$kj
-    }else{
-      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-      kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-    }
+    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
 
     Mat.X <- as.list(rep(0,d))
     #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
@@ -1416,9 +1409,9 @@ plam.rob.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nkno
     }
 }
 
-#' Variable selection in classical PLAM with fixed lambdas
+#' Variable selection in classical PLAM with fixed lambdas and fixed nknots
 #' @export
-plam.cl.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
+plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -1441,15 +1434,9 @@ plam.cl.vs.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknot
     q <- dim(Z)[2]
   }
 
-  if( is.null(nknots) ){
-    AUX <- select.nknots.cl(y, Z, X, degree.spline=degree.spline)
-    nknots <- AUX$nknots
-    nbasis <- AUX$nbasis
-    kj <- AUX$kj
-  }else{
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-  }
+  nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+  kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
+
 
   Mat.X <- as.list(rep(0,d))
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
@@ -1627,9 +1614,9 @@ Hj.matrix <- function(Xj, nknots, degree.spline){
   return( (t(Mat)%*%Mat)/length(grilla) )
 }
 
-#' Selection lambdas with robust BIC criteria
+#' Selection lambdas with robust BIC criteria for fixed nknots
 #' @export
-select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, maxit=100, method="MM", MAXITER=100){
+select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degree.spline=3, maxit=100, method="MM", MAXITER=100){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -1652,15 +1639,9 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     q <- dim(Z)[2]
   }
 
-  if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y=y, Z=Z, X=X, degree.spline=degree.spline, method=method, maxit=maxit)
-    nknots <- AUX$nknots
-    nbasis <- AUX$nbasis
-    kj <- AUX$kj
-  }else{
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-  }
+  nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+  kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
+
 
   Mat.X <- as.list(rep(0,d))
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
@@ -1726,7 +1707,7 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
     #print(i)
     lambdas1 <- rep(grilla[i,1],q+1)
     lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+    AUX2 <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     xdesign <- AUX2$xdesign
@@ -1747,14 +1728,16 @@ select.rob.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL,
   lambdas1 <- la1/abs(beta0[1:(q+1)])
   lambdas2 <- la2/normgammaj0
 
-  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2)
+  AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+
+  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
   return(salida)
 }
 
 
-#' Selection lambdas with classical BIC criteria
+#' Selection lambdas with classical BIC criteria with nknots fixed
 #' @export
-select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100){
+select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degree.spline=3, MAXITER=100){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -1777,15 +1760,8 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
     q <- dim(Z)[2]
   }
 
-  if( is.null(nknots) ){
-    AUX <- select.nknots.cl(y=y, Z=Z, X=X, degree.spline=degree.spline)
-    nknots <- AUX$nknots
-    nbasis <- AUX$nbasis
-    kj <- AUX$kj
-  }else{
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-  }
+  nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
+  kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
 
   Mat.X <- as.list(rep(0,d))
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
@@ -1841,7 +1817,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
     #print(i)
     lambdas1 <- rep(grilla[i,1],q+1)
     lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+    AUX2 <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     xdesign <- AUX2$xdesign
@@ -1860,7 +1836,9 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
   lambdas1 <- la1/abs(beta0[1:(q+1)])
   lambdas2 <- la2/normgammaj0
 
-  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2)
+  AUXfinal <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
+
+  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
   return(salida)
 }
 
@@ -1869,42 +1847,65 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots=NULL, 
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, degree.spline=3, rob.maxit=100, method="MM", MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
+    d <- dim(X)[2]
+    lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+    lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
+    lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+    lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+    grid.nknots <- lim.inf.nknots:lim.sup.nknots
+
+    BIC <- rep(0,length(grid.nknots))
+
     grid.lambda1 <- seq(0,0.5,0.1)
     grid.lambda2 <- seq(0,0.5,0.1)
-    sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
-    lambda1 <- sal$la1
-    lambda2 <- sal$la2
-    if(lambda1==0.5){
-     if(lambda2==0.5){
-       grid.lambda1 <- seq(0.5,1,0.1)
-       grid.lambda2 <- seq(0.5,1,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
-       lambda1 <- sal$la1
-       lambda2 <- sal$la2
-     }else{
-       grid.lambda1 <- seq(0.5,1,0.1)
-       grid.lambda2 <- seq(0,0.5,0.1)
-       sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
-       lambda1 <- sal$la1
-       lambda2 <- sal$la2
-     }
-    }else{
+
+    for(nknots in grid.nknots){
+
+      sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+      lambda1 <- sal$la1
+      lambda2 <- sal$la2
+
+      if(lambda1==0.5){
        if(lambda2==0.5){
-         grid.lambda1 <- seq(0,0.5,0.1)
+         grid.lambda1 <- seq(0.5,1,0.1)
          grid.lambda2 <- seq(0.5,1,0.1)
-         sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+         sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+         lambda1 <- sal$la1
+         lambda2 <- sal$la2
+       }else{
+         grid.lambda1 <- seq(0.5,1,0.1)
+         grid.lambda2 <- seq(0,0.5,0.1)
+         sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
          lambda1 <- sal$la1
          lambda2 <- sal$la2
        }
+      }else{
+       if(lambda2==0.5){
+         grid.lambda1 <- seq(0,0.5,0.1)
+         grid.lambda2 <- seq(0.5,1,0.1)
+         sal <- select.rob.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER)
+         lambda1 <- sal$la1
+         lambda2 <- sal$la2
+       }
+      }
+      #print(lambda1)
+      #print(lambda2)
+      lambdas1 <- sal$lambdas1
+      lambdas2 <- sal$lambdas2
+
+      desvio.hat <- sal$desvio.hat
+      regresion.hat <- sal$regresion.hat
+
+      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
+      tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
+      BIC[nknots-lim.inf.nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1)
     }
-    #print(lambda1)
-    #print(lambda2)
-    lambdas1 <- sal$lambdas1
-    lambdas2 <- sal$lambdas2
-    sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, np.point = np.point, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method, MAXITER=MAXITER, bound.control = bound.control)
-    salida <- c(sal,lambda1=list(lambda1), lambda2=list(lambda2))
+    posicion <- which.min(BIC)
+    nknots <- posicion+lim.inf.nknots-1
+    AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+    salida <- list(lambda1=lambda1, lambda2=lambda2, AUXfinal)
     return(salida)
   }else{
     sal <- plam.rob(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=rob.maxit, method=method)
@@ -1919,40 +1920,59 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, knots=NULL
 #' @export
 plam.cl.vs <- function(y, Z, X, np.point = NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
+    d <- dim(X)[2]
+    lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+    lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
+    lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+    lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+    grid.nknots <- lim.inf.nknots:lim.sup.nknots
+
+    BIC <- rep(0,length(grid.nknots))
+
     grid.lambda1 <- seq(0,0.5,0.1)
     grid.lambda2 <- seq(0,0.5,0.1)
-    sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
-    lambda1 <- sal$la1
-    lambda2 <- sal$la2
-    if(lambda1==0.5){
-      if(lambda2==0.5){
-        grid.lambda1 <- seq(0.5,1,0.1)
-        grid.lambda2 <- seq(0.5,1,0.1)
-        sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
-        lambda1 <- sal$la1
-        lambda2 <- sal$la2
+
+    for(nknots in grid.nknots){
+      sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+      lambda1 <- sal$la1
+      lambda2 <- sal$la2
+      if(lambda1==0.5){
+        if(lambda2==0.5){
+          grid.lambda1 <- seq(0.5,1,0.1)
+          grid.lambda2 <- seq(0.5,1,0.1)
+          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+          lambda1 <- sal$la1
+          lambda2 <- sal$la2
+        }else{
+          grid.lambda1 <- seq(0.5,1,0.1)
+          grid.lambda2 <- seq(0,0.5,0.1)
+          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+          lambda1 <- sal$la1
+          lambda2 <- sal$la2
+        }
       }else{
-        grid.lambda1 <- seq(0.5,1,0.1)
-        grid.lambda2 <- seq(0,0.5,0.1)
-        sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
-        lambda1 <- sal$la1
-        lambda2 <- sal$la2
+        if(lambda2==0.5){
+          grid.lambda1 <- seq(0,0.5,0.1)
+          grid.lambda2 <- seq(0.5,1,0.1)
+          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
+          lambda1 <- sal$la1
+          lambda2 <- sal$la2
+        }
       }
-    }else{
-      if(lambda2==0.5){
-        grid.lambda1 <- seq(0,0.5,0.1)
-        grid.lambda2 <- seq(0.5,1,0.1)
-        sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER)
-        lambda1 <- sal$la1
-        lambda2 <- sal$la2
-      }
+      #print(lambda1)
+      #print(lambda2)
+      lambdas1 <- sal$lambdas1
+      lambdas2 <- sal$lambdas2
+
+      regresion.hat <- sal$regresion.hat
+
+      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
+      BIC[nknots-lim.inf.nknots+1] <- log( sum((y - regresion.hat.r)^2) )+ (log(n)/(2*n))*(nbasis+q+1)
     }
-    #print(lambda1)
-    #print(lambda2)
-    lambdas1 <- sal$lambdas1
-    lambdas2 <- sal$lambdas2
-    sal <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, np.point = np.point, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, knots=knots, degree.spline=degree.spline, MAXITER=MAXITER, bound.control = bound.control)
-    salida <- c(sal,lambda1=list(lambda1), lambda2=list(lambda2))
+    posicion <- which.min(BIC)
+    nknots <- posicion+lim.inf.nknots-1
+    AUXfinal <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+    salida <- list(lambda1=lambda1, lambda2=lambda2, AUXfinal)
     return(salida)
   }else{
     sal <- plam.cl(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline)
