@@ -87,5 +87,10 @@ sal.rob$la2
 sal.rob$coef.const
 sal.rob$coef.lin
 sal.rob$is.zero
-
+for(i in 1:p){
+  p.res <- y-sal.rob$coef.const-Z%*%as.matrix(sal.rob$coef.lin)-rowSums(sal.rob$g.matrix[,-i])
+  plot(X[,i],p.res)
+  ord <- order(X[,i])
+  lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
+}
 
