@@ -45,4 +45,25 @@ for(i in 1:p){
   lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
 }
 
+#Ahora con selección de variables
+#- Con k y lambdas fijos
+lambdas1 <- rep(0.1,q)
+lambdas2 <- rep(0.2,p)
+nknots <- 0
+degree.spline <- 3
+maxit <- 100
+MAXITER <- 100
+bound.control <- 10^(-3)
+sal.rob <- plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots)
+sal.rob$is.zero
+sal.rob$coef.const
+sal.rob$coef.lin
+for(i in 1:p){
+  p.res <- y-sal.rob$coef.const-Z%*%as.matrix(sal.rob$coef.lin)-rowSums(sal.rob$g.matrix[,-i])
+  plot(X[,i],p.res)
+  ord <- order(X[,i])
+  lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
+}
+
+
 
