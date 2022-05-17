@@ -81,12 +81,112 @@ sal.rob$coef.lin
 sal.rob$is.zero
 
 #Y ahora que calcule el k también automático
+system.time(
 sal.rob <- plam.rob.vs(y, Z, X)
+)
+sal.rob$nknots
 sal.rob$la1
 sal.rob$la2
 sal.rob$coef.const
 sal.rob$coef.lin
 sal.rob$is.zero
+for(i in 1:p){
+  p.res <- y-sal.rob$coef.const-Z%*%as.matrix(sal.rob$coef.lin)-rowSums(sal.rob$g.matrix[,-i])
+  plot(X[,i],p.res)
+  ord <- order(X[,i])
+  lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
+}
+
+
+#-- Prueba con n más grande --#
+mu <- 5
+beta <- c(1,2,3,0,0,0)
+q <- length(beta)
+eta1 <- function(x){
+  return( 2*sin(pi*x)-4/pi )
+}
+eta2 <- function(x){
+  return( exp(x)-(exp(1)-1) )
+}
+p <- 4
+n <- 500
+set.seed(23)
+Z <- matrix(runif(n*q),n,q)
+X <- matrix(runif(n*p),n,p)
+
+sigma <- 0.2
+eps <- rnorm(n,0,sd=sigma)
+
+y <- mu+Z%*%as.matrix(beta)+eta1(X[,1])+eta2(X[,2])+eps
+
+#Estimador robust
+system.time(
+sal.rob <- plam.rob.vs(y, Z, X)
+)
+sal.rob$nknots
+sal.rob$la1
+sal.rob$la2
+sal.rob$coef.const
+sal.rob$coef.lin
+sal.rob$is.zero
+for(i in 1:p){
+  p.res <- y-sal.rob$coef.const-Z%*%as.matrix(sal.rob$coef.lin)-rowSums(sal.rob$g.matrix[,-i])
+  plot(X[,i],p.res)
+  ord <- order(X[,i])
+  lines(X[ord,i],sal.rob$g.matrix[ord,i],col='blue',lwd=2)
+}
+
+### Ejemplo 2 de Lv (2017)
+
+p <- q <- 10
+mu <- 0
+beta <- c(3,1.5,2,-1.5,0,0,0,0,0,0)
+eta1 <- function(x){
+  return( 5*x - 5/2 )
+}
+eta2 <- function(x){
+  return( 3*(2*x-1)^2 - 1 )
+}
+eta3 <- function(x){
+  return( 4*sin(2*pi*x)/(2-sin(2*pi*x)) -(8/sqrt(3)-4) )
+}
+eta4 <- function(x){
+  return( cos(4*pi*x) )
+}
+n <- 200
+set.seed(23)
+#Yo tengo las variables al revés
+X <- matrix(runif(n*q),n,q)
+matriz.cov <- matrix(0,q,q)
+for(i in 1:q){
+  for(j in 1:q){
+    matriz.cov[i,j] <- 0.5^(abs(i-j))
+  }
+}
+library(mvtnorm)
+Z <- rmvnorm(n, mean= rep(0,q), sigma=matriz.cov)
+
+sigma <- 1
+eps <- rnorm(n,0,sd=sigma)
+
+y <- mu+Z%*%as.matrix(beta)+eta1(X[,1])+eta2(X[,2])+eta3(X[,3])+eta4(X[,4])+eps
+
+#Probar con lambdas y k fijos
+
+#Probar con k fijo y variando lambdas
+
+#Este es con el que estima todo en simultáneo...
+system.time(
+  sal.rob <- plam.rob.vs(y, Z, X)
+)
+
+sal.rob$nknots
+sal.rob$la1
+sal.rob$la2
+sal.rob$coef.const
+sal.rob$coef.lin
+sal.rob$normgammaj
+sal.rob $is.zero
 for(i in 1:p){
   p.res <- y-sal.rob$coef.const-Z%*%as.matrix(sal.rob$coef.lin)-rowSums(sal.rob$g.matrix[,-i])
   plot(X[,i],p.res)
