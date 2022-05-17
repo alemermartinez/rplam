@@ -154,7 +154,7 @@ eta4 <- function(x){
   return( cos(4*pi*x) )
 }
 n <- 200
-set.seed(23)
+set.seed(234)
 #Yo tengo las variables al revés
 X <- matrix(runif(n*q),n,q)
 matriz.cov <- matrix(0,q,q)
