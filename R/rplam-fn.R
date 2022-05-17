@@ -1632,8 +1632,8 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
   unpen <- plam.rob(y=y, Z=Z, X=X, nknots=nknots, degree.spline=degree.spline)
   betas.tildes <- unpen$coef.lin
   nMat <- unpen$nMat
-  normgammaj.tildes <- rep(0,d)
-  for(i in 1:d){
+  normgammaj.tildes <- rep(0,p)
+  for(i in 1:p){
     Hj <- Hj.matrix(X[,i], nknots, degree.spline)
     gammaj <- as.matrix(unpen$coef.spl[(1+nMat*(i-1)):(nMat*i)])
     normgammaj.tildes[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
@@ -1643,9 +1643,10 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
   dim.grilla <- dim(grilla)[1]
   BIC <- rep(0,dim.grilla)
   for(i in 1:dim.grilla){
+    cat("grilla de lambdas = ", grilla[i,1], "\n")
     #print(i)
     lambdas1 <- rep(grilla[i,1],q)/abs(betas.tildes)
-    lambdas2 <- rep(grilla[i,2],d)/normgammaj.tildes
+    lambdas2 <- rep(grilla[i,2],p)/normgammaj.tildes
     AUX2 <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
@@ -1665,7 +1666,7 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
   la2 <- grilla[position,2]
 
   lambdas1 <- rep(grilla[i,1],q)/abs(betas.tildes)
-  lambdas2 <- rep(grilla[i,2],d)/normgammaj.tildes
+  lambdas2 <- rep(grilla[i,2],p)/normgammaj.tildes
 
   AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
 
@@ -1802,41 +1803,40 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, degree.spl
     lambdas1.matrix <- matrix(0,length(grid.nknots),q)
     lambdas2.matrix <- matrix(0,length(grid.nknots),d)
 
-    grid.lambda1 <- seq(0,0.2,0.05)
-    grid.lambda2 <- seq(0,0.2,0.05)
+    grid.lambda1 <- seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
+    grid.lambda2 <- seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
 
     for(nknots in grid.nknots){
       print(nknots)
 
-      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.lambda1, grid.la2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
       la1 <- sal$la1
       la2 <- sal$la2
 
-      if(la1==0.2){
-       if(la2==0.2){
-         grid.la1 <- seq(0.2,0.4,0.05)
-         grid.la2 <- seq(0.2,0.4,0.05)
-         sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-         la1 <- sal$la1
-         la2 <- sal$la2
-       }else{
-         grid.la1 <- seq(0.2,0.4,0.05)
-         grid.la2 <- seq(0,0.2,0.05)
-         sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-         la1 <- sal$la1
-         la2 <- sal$la2
-       }
-      }else{
-       if(la2==0.2){
-         grid.la1 <- seq(0,0.2,0.05)
-         grid.la2 <- seq(0.2,0.4,0.04)
-         sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-         la1 <- sal$la1
-         la2 <- sal$la2
-       }
-      }
-      #print(lambda1)
-      #print(lambda2)
+      #if(la1==0.2){
+      # if(la2==0.2){
+      #   grid.la1 <- seq(0.2,0.4,0.05)
+      #   grid.la2 <- seq(0.2,0.4,0.05)
+      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+      #   la1 <- sal$la1
+      #   la2 <- sal$la2
+      # }else{
+      #   grid.la1 <- seq(0.2,0.4,0.05)
+      #   grid.la2 <- seq(0,0.2,0.05)
+      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+      #   la1 <- sal$la1
+      #   la2 <- sal$la2
+      # }
+      #}else{
+      # if(la2==0.2){
+      #   grid.la1 <- seq(0,0.2,0.05)
+      #   grid.la2 <- seq(0.2,0.4,0.04)
+      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
+      #   la1 <- sal$la1
+      #   la2 <- sal$la2
+      # }
+      #}
+
       lambdas1 <- sal$lambdas1
       lambdas2 <- sal$lambdas2
 
@@ -1858,6 +1858,7 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, degree.spl
     la1 <- as.numeric(la1.matrix[posicion,])
     la2 <- as.numeric(la2.matrix[posicion,])
 
+    #Este paso que sigue lo necesito?
     AUXfinal <- plam.rob.vs.nknots.lambdas(y, Z, X,lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
     salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
