@@ -11,8 +11,7 @@ am.rob(
   nknots = NULL,
   knots = NULL,
   degree.spline = 3,
-  maxit = 100,
-  method = "MM"
+  maxit = 100
 )
 }
 \description{

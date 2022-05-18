@@ -11,10 +11,8 @@ plam.rob.vs(
   np.point = NULL,
   vs = TRUE,
   nknots = NULL,
-  knots = NULL,
   degree.spline = 3,
-  rob.maxit = 100,
-  method = "MM",
+  maxit = 100,
   MAXITER = 100,
   bound.control = 10^(-3)
 )

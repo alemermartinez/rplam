@@ -2,7 +2,7 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.cl.lambdas}
 \alias{select.cl.lambdas}
-\title{Selection lambdas with classical BIC criteria}
+\title{Selection lambdas with classical BIC criteria with nknots fixed}
 \usage{
 select.cl.lambdas(
   y,
@@ -10,12 +10,11 @@ select.cl.lambdas(
   X,
   grid.lambda1,
   grid.lambda2,
-  nknots = NULL,
-  knots = NULL,
+  nknots,
   degree.spline = 3,
   MAXITER = 100
 )
 }
 \description{
-Selection lambdas with classical BIC criteria
+Selection lambdas with classical BIC criteria with nknots fixed
 }
