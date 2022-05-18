@@ -4,7 +4,7 @@
 \alias{select.nknots.rob.am}
 \title{Robust knot selection for plam}
 \usage{
-select.nknots.rob.am(y, X, degree.spline = 3, method = "MM", maxit = 100)
+select.nknots.rob.am(y, X, degree.spline = 3, maxit = 100)
 }
 \description{
 Robust knot selection for plam

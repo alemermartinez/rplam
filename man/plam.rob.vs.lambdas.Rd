@@ -2,24 +2,21 @@
 % Please edit documentation in R/rplam-fn.R
 \name{plam.rob.vs.lambdas}
 \alias{plam.rob.vs.lambdas}
-\title{Variable selection in robust PLAM with fixed lambdas}
+\title{Selection lambdas with robust BIC criteria for fixed nknots}
 \usage{
 plam.rob.vs.lambdas(
   y,
   Z,
   X,
-  np.point = NULL,
-  lambdas1,
-  lambdas2,
-  nknots = NULL,
-  knots = NULL,
+  grid.la1,
+  grid.la2,
+  nknots,
   degree.spline = 3,
   maxit = 100,
-  method = "MM",
   MAXITER = 100,
   bound.control = 10^(-3)
 )
 }
 \description{
-Variable selection in robust PLAM with fixed lambdas
+Selection lambdas with robust BIC criteria for fixed nknots
 }
