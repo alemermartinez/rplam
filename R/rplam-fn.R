@@ -1317,19 +1317,23 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
 
       try.sal <- try(
         AUX <- solve(t(xdesign[,-1])%*%W%*%(xdesign[,-1]) + 1/2*n*Sigmalambda)
-        #aa <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
-        #print(det(aa))
-        #dimaa <- dim(aa)[1]
-        #AUX <- .C("inverse", as.double(aa), salida=as.double(0), as.integer(dimaa))$salida
       )
+
+      #aa <- t(xdesign[,-1])%*%W%*%(xdesign[,-1]) + 1/2*n*Sigmalambda
+      #dimaa <- dim(aa)[1]
+      #try.sal <- try(
+      #  AUX <- .C("inverse_afuera", as.double(aa), as.integer(dimaa), salida=as.double(0))$salida
+      #)
 
       if(class(try.sal)!= 'try-error'){
         beta1 <- as.vector(AUX%*%t(xdesign[,-1])%*%W%*%(y-beta0)) #y
         corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
         beta.ini <- beta1
+        error <- 0
       }else{
         beta1 <- beta.ini
         iter <- MAXITER
+        error <- 1
       }
     }
 
@@ -1351,7 +1355,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
 
 
     if(is.null(np.point)){
-      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
+      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, error=error)
         #list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
       return(salida)
     }else{
@@ -1406,7 +1410,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
           prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
         }
       }
-      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
+      salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion, error=error)
         #list(prediction=regresion.hat, sigma.hat=sigma.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
       return(salida)
     }
@@ -1643,12 +1647,14 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
   grilla <- expand.grid(grid.la1,grid.la2)
   dim.grilla <- dim(grilla)[1]
   BIC <- rep(0,dim.grilla)
+  error <- 0
   for(i in 1:dim.grilla){
     cat("grilla de lambdas = ", grilla[i,1], "\n")
     #print(i)
     lambdas1 <- rep(grilla[i,1],q)/abs(betas.tildes)
     lambdas2 <- rep(grilla[i,2],p)/normgammaj.tildes
     AUX2 <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+    error <- error+AUX2$error
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
     desvio.hat <- AUX2$sigma.hat
@@ -1671,7 +1677,7 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
 
   AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
 
-  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal) #list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
+  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error) #list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
   return(salida)
 }
 
@@ -1788,30 +1794,38 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degre
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, nknots=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3)){
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
-    r <- degree.spline-1
-    lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
-    lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
-    lim.sup.nknots <- lim.sup.kj - degree.spline - 1
-    lim.inf.nknots <- lim.inf.kj - degree.spline - 1
-    grid.nknots <- lim.inf.nknots:lim.sup.nknots
+    if(is.null(grid.nknots)){
+      r <- degree.spline-1
+      lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+      lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
+      lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+      lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+      grid.nknots <- lim.inf.nknots:lim.sup.nknots
+    }
+    ngrid <- length(grid.nknots)
 
-    BIC <- rep(0,length(grid.nknots))
+    BIC <- rep(0,ngrid)
     la1.matrix <- matrix(0,length(grid.nknots),1)
     la2.matrix <- matrix(0,length(grid.nknots),1)
     lambdas1.matrix <- matrix(0,length(grid.nknots),q)
     lambdas2.matrix <- matrix(0,length(grid.nknots),d)
 
-    grid.lambda1 <- seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
-    grid.lambda2 <- seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
+    if(is.null(grid.la1)){
+      grid.la1 <- seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
+    }
+    if(is.null(grid.la2)){
+      grid.la2 <- seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
+    }
 
     for(nknots in grid.nknots){
       print(nknots)
 
-      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.lambda1, grid.la2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+
       la1 <- sal$la1
       la2 <- sal$la2
 
