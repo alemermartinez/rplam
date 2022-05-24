@@ -1402,3 +1402,30 @@ free(aux1); free(aux2); free(res);
 return;
 }
 
+void matriz_salida(double *xx, int *n, int *p, double *salida){
+
+  register int i,j;
+  double **x;
+
+  x=(double**) malloc( sizeof(double *) * (*n) );
+  for(i=0;i<(*n);i++)
+    x[i]=(double *) malloc( sizeof(double) * (*p) );
+
+  /* copio la matriz de diseno en x */
+  for(i=0;i<(*n);i++)
+    for(j=0;j<(*p);j++)
+      x[i][j]=xx[j*(*n)+i];
+
+  /* copio la x en la salida */
+  for(i=0;i<(*n);i++)
+    for(j=0;j<(*p);j++)
+      salida[j*(*n)+i]=x[i][j];
+
+  /* ahora libero */
+  for(i=0;i<(*n);i++)
+    free(x[i]);
+  free(x);
+
+  return;
+}
+

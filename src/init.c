@@ -70,6 +70,10 @@ static R_NativePrimitiveArgType tukey_pos_t[] = {
     REALSXP
 };
 
+static R_NativePrimitiveArgType matriz_salida_t[] = {
+    REALSXP, INTSXP, INTSXP, REALSXP
+};
+
 static const R_CMethodDef CEntries[]  = {
     CDEF(ini_mu_pos_multi),
     CDEF(kernel_cl_pos_multi),
@@ -83,6 +87,7 @@ static const R_CMethodDef CEntries[]  = {
     CDEF(kernel_tukey_alpha_multi),
     CDEF(huber_pos),
     CDEF(tukey_pos),
+    CDEF(matriz_salida),
     {NULL, NULL, 0}
 };
 
