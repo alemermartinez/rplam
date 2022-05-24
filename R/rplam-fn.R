@@ -1794,7 +1794,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degre
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3)){
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
@@ -1805,10 +1805,13 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
       lim.sup.nknots <- lim.sup.kj - degree.spline - 1
       lim.inf.nknots <- lim.inf.kj - degree.spline - 1
       grid.nknots <- lim.inf.nknots:lim.sup.nknots
+    }else{
+      lim.inf.nknots <- min(grid.nknots)
+      lim.sup.nknots <- max(grid.nknots)
     }
     ngrid <- length(grid.nknots)
 
-    BIC <- rep(0,ngrid)
+    BIC <- rep(NA,ngrid)
     la1.matrix <- matrix(0,length(grid.nknots),1)
     la2.matrix <- matrix(0,length(grid.nknots),1)
     lambdas1.matrix <- matrix(0,length(grid.nknots),q)
@@ -1820,12 +1823,19 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     if(is.null(grid.la2)){
       grid.la2 <- seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
     }
+    contador.k.malos <- 0
 
     for(nknots in grid.nknots){
       print(nknots)
 
-      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+      if(contador.k.malos>k.malos.max){
+        break
+      }
 
+      sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+      if(sal$errortotal>5){
+        contador.k.malos <- contador.k.malos+1
+      }
       la1 <- sal$la1
       la2 <- sal$la2
 
