@@ -81,6 +81,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
     cat("No se cumple la hipótesis de: 1<=r<=ell-2")
   }
 
+  #Corregir para que solo tire un warning
   if(is.factor(Z)){
     q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
     lev.Z <- levels(Z)
@@ -137,7 +138,7 @@ select.nknots.cl <- function(y,Z,X,degree.spline=3){
 
 
     }
-    nMat <- dim(Mat.X[[ell]])[2]
+    nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
     sal <- stats::lm(y~Z.aux+Xspline)
     betas <- as.vector(sal$coefficients)
@@ -225,7 +226,7 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
       Xspline <- cbind(Xspline,Mat.X[[ell]])
 
     }
-    nMat <- dim(Mat.X[[ell]])[2]
+    nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
     sal <- stats::lm(y~Xspline)
     betas <- as.vector(sal$coefficients)
@@ -326,7 +327,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline=3, maxit=100){
       Xspline <- cbind(Xspline,Mat.X[[ell]])
 
     }
-    nMat <- dim(Mat.X[[ell]])[2]
+    nMat <- dim(Mat.X[[1]])[2] #Decía ell
     #dim(Xspline)[2]/4
 
 
@@ -439,7 +440,7 @@ select.nknots.rob.am <- function(y, X, degree.spline=3, maxit=100){
 
       Xspline <- cbind(Xspline,Mat.X[[ell]])
     }
-    nMat <- dim(Mat.X[[ell]])[2]
+    nMat <- dim(Mat.X[[1]])[2] #Decía ell
     #dim(Xspline)[2]/4
 
 
@@ -566,7 +567,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
     Xspline <- cbind(Xspline,Mat.X[[ell]])
 
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
   sal <- stats::lm(y~Z.aux+Xspline)
   betas <- as.vector(sal$coefficients)
@@ -712,7 +713,7 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3)
 
     Xspline <- cbind(Xspline,Mat.X[[ell]])
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
   sal <- stats::lm(y~Xspline)
   betas <- as.vector(sal$coefficients)
@@ -876,7 +877,7 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spl
     Xspline <- cbind(Xspline,Mat.X[[ell]])
 
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
   control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
@@ -1028,7 +1029,7 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
 
     Xspline <- cbind(Xspline,Mat.X[[ell]])
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
   control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
@@ -1262,7 +1263,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       Xspline <- cbind(Xspline,Mat.X[[ell]])
 
     }
-    nMat <- dim(Mat.X[[ell]])[2]
+    nMat <- dim(Mat.X[[1]])[2] #Decía ell
 
     control <- robustbase::lmrob.control(trace.level = 0,         # 0
                                          nResample   =  500,      # 500 default
@@ -1325,7 +1326,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
       #  AUX <- .C("inverse_afuera", as.double(aa), as.integer(dimaa), salida=as.double(0))$salida
       #)
 
-      if(class(try.sal)!= 'try-error'){
+      if(class(try.sal)[1]!= 'try-error'){
         beta1 <- as.vector(AUX%*%t(xdesign[,-1])%*%W%*%(y-beta0)) #y
         corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
         beta.ini <- beta1
@@ -1478,7 +1479,7 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
     Xspline <- cbind(Xspline,Mat.X[[ell]])
 
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
   sal <- stats::lm(y~Z.aux+Xspline)
   xdesign <- cbind(rep(1,n),Z.aux,Xspline)
   #Construyo el beta 0
@@ -1517,7 +1518,7 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
       AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
     )
 
-    if(class(try.sal)!= 'try-error'){
+    if(class(try.sal)[1]!= 'try-error'){
       beta1 <- as.vector(AUX%*%t(xdesign)%*%W%*%y)
       corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
       beta.ini <- beta1
@@ -1741,7 +1742,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degre
     Mat.X[[ell]] <- spl.final[,-1]
 
   }
-  nMat <- dim(Mat.X[[ell]])[2]
+  nMat <- dim(Mat.X[[1]])[2] #Decía ell
   sal <- stats::lm(y~Z.aux+Xspline)
   xdesign <- cbind(rep(1,n),Z.aux,Xspline)
   #Construyo el beta 0
