@@ -1678,7 +1678,7 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
 
   AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
 
-  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error) #list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
+  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error, BIClambdas=BIC)
   return(salida)
 }
 
@@ -1795,10 +1795,11 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degre
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){ #Estaba en 2
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=5){ #Estaba en 2
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
+    n <- length(y)
     if(is.null(grid.nknots)){
       r <- degree.spline-1
       lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
@@ -1891,7 +1892,7 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     AUXfinal <- plam.rob.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
-    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
+    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), BICnknots=BIC, AUXfinal)
     return(salida)
   }else{
     sal <- plam.rob(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit)
