@@ -1451,23 +1451,28 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
   kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
 
   Mat.X <- as.list(rep(0,d))
-  grilla.tes <- seq(0,1,length=1000)
+
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
-    nodos.spl   <- seq(min(X[,ell]), max(X[,ell]), length = (2+nknots))
-    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+
+    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+
+    if(nknots>0){
+      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
+    }else{
+      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
+    }
+
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
     aux <- getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
 
     #Centrado con la integral
-    nodos.spl   <- seq(0, 1, length = (2+nknots))
-    base.beta   <- create.bspline.basis(rangeval = c(0, 1),
-                                        norder = (degree.spline+1),
-                                        breaks = nodos.spl)
-    spl.center   <- getbasismatrix(grilla.tes, base.beta)
+    spl.center <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -1566,18 +1571,23 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
     Mat.X.new <- as.list(rep(0,d))
     Xspline.new <- NULL
     for(ell in 1:d){
-      nodos.spl   <- seq(min(punto[,ell]), max(punto[,ell]), length = (2+nknots))
-      base.beta   <- create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
+
+      grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+
+      if(nknots>0){
+        aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+        nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
+      }else{
+        nodos.spl <- c(min(X[,ell]), max(X[,ell]))
+      }
+
+      base.beta <- fda::create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- getbasismatrix(punto[,ell], base.beta)
+      aux <- fda::getbasismatrix(punto[,ell], base.beta)
       naux <- dim(aux)[2]
 
       #Centrado con la integral
-      nodos.spl   <- seq(0, 1, length = (2+nknots))
-      base.beta   <- create.bspline.basis(rangeval = c(0, 1),
-                                          norder = (degree.spline+1),
-                                          breaks = nodos.spl)
       spl.center   <- getbasismatrix(grilla.tes, base.beta)
       spl.final.new <- aux
       for (j in 1:naux){
@@ -1606,7 +1616,7 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
 
     for(k in 1:np){
       for(ell in 1:d){
-        prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+        prediccion[,ell] <- as.vector( Xspline.new[,(nMat.new*(ell-1)+1):(nMat.new*ell)] %*% coef.spl[(nMat.new*(ell-1)+1):(nMat.new*ell)] )
       }
     }
 
