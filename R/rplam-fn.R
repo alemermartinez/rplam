@@ -1231,20 +1231,11 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
   kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
 
   Mat.X <- as.list(rep(0,d))
-  #grilla.tes <- seq(0,1,length=1000)
+  grilla.tes <- seq(0,1,length=1000)
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
-
-    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-    if(nknots>0){
-      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-    }else{
-      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-    }
-    #nodos.spl   <- seq(min(X[,ell]), max(X[,ell]), length = (2+nknots))
+    nodos.spl   <- seq(min(X[,ell]), max(X[,ell]), length = (2+nknots))
     base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
@@ -1252,14 +1243,17 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
     naux <- dim(aux)[2]
 
     #Centrado con la integral
-    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+    nodos.spl   <- seq(0, 1, length = (2+nknots))
+    base.beta   <- create.bspline.basis(rangeval = c(0, 1),
+                                        norder = (degree.spline+1),
+                                        breaks = nodos.spl)
+    spl.center   <- getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
       spl.final[,j]=aux[,j]-centroj
     }
     Mat.X[[ell]] <- spl.final[,-1]
-
 
     Xspline <- cbind(Xspline,Mat.X[[ell]])
   }
@@ -1284,43 +1278,49 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
   beta.ini.complete <- as.vector(sal$coefficients)
   beta0 <- sal$coefficients[1]
   beta.ini <- as.vector(sal$coefficients)[-1]
-  #beta.hat <- beta.ini[-1]
-  #coef.lin <- beta.ini[2:(q+1)]
-  #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
   nbetas <- length(beta.ini)
 
   normgammaj <- rep(0,d)
   corte <- 1
   iter <- 0
+
   while( (corte>bound.control) & (iter<MAXITER)){
     iter <- iter +1
     #print(iter)
     regresion.hat <- xdesign%*%c(beta0, beta.ini)
     res <- y-regresion.hat
-    an <- quantile(abs(res),2*(n^(-1/2)))
-    W <- diag( as.vector(tukey.loss((res)/sigma.hat)/((an+abs(res))^2) ) )
 
+    #Lo siguiente computa la matriz Sigma Lambda1, Lambda2
     Sigmalambda <- matrix(0,nbetas,nbetas)
     for(i in 1:q){
-      Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])
+      Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])*(1/2)
     }
     for(i in 1:d){
       Hj <- Hj.matrix(X[,i], nknots, degree.spline)
       gammaj <- as.matrix(beta.ini[(q+1+nMat*(i-1)):(nMat*i+q)])
       normgammaj[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
-      Sigmalambda[(q+1+nMat*(i-1)):(nMat*i+(q)),(q+1+nMat*(i-1)):(nMat*i+(q))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj
+      Sigmalambda[(q+1+nMat*(i-1)):(nMat*i+(q)),(q+1+nMat*(i-1)):(nMat*i+(q))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj*(1/2)
     }
 
-    #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
-
-    #options(show.error.messages = TRUE)
-
+    #Ahora voy a computar el estimador reweighted:
+    #Calculamos el vector de pesos wi:
+    wi <- as.matrix(psi.w(res/sigma.hat))
+    Si <- xdesign[,-1]
+    AUX1 <- 0
+    for(i in 1:n){
+      AUX1 <- wi[i]*t(t(Si[i,]))%*%t(Si[i,])/(sigma.hat^2*n) + AUX1
+    }
     try.sal <- try(
-      AUX <- solve(t(xdesign[,-1])%*%W%*%(xdesign[,-1]) + 1/2*n*Sigmalambda)
+      AUX <- solve(AUX1+2*Sigmalambda)
     )
 
     if(class(try.sal)[1]!= 'try-error'){
-      beta1 <- as.vector(AUX%*%t(xdesign[,-1])%*%W%*%(y-beta0)) #y
+      AUX2 <- 0
+      for(i in 1:n){
+        AUX2 <- wi[i]/(sigma.hat^2)*Si[i,]*(y[i]-beta0)/n + AUX2
+      }
+      AUX2 <- as.matrix(AUX2)
+      beta1 <- as.vector( AUX%*%AUX2 ) #y
       corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
       beta.ini <- beta1
       error <- 0
@@ -1362,30 +1362,43 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
     Xspline.new <- NULL
     for(ell in 1:d){
 
-      grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+      #El que sigue no me sirve para cuando los puntos están
+      #por afuera del rango de la estimación
+      #grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n) #seq(0,1,lenght=n) #Si no es en la simulación va: seq(min(X[,ell]),max(X[,ell]),length=n)
+      #nodos.spl   <- seq(min(X[,ell]), max(X[,ell]), length = (2+nknots)) #seq(min(punto[,ell]), max(punto[,ell]), length = (2+nknots)) #Si no es en la simulación va: seq(min(X[,ell]), max(X[,ell]), length = (2+nknots))
+      #base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])), #El c(0,1) va sólo en la simulación. En el resto va c(min(X[,ell]), max(X[,ell]))
+      #                                         norder = (degree.spline+1),
+      #                                         breaks = nodos.spl)
+      #aux <- fda::getbasismatrix(X.new[,ell], base.beta)
+      #naux <- dim(aux)[2]
+      #spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+      #spl.final <- aux
+      #for (j in 1:naux){
+      #  centroj=mean(spl.center[,j])
+      #  spl.final[,j]=aux[,j]-centroj
+      #}
+      #Mat.X.new[[ell]] <- spl.final[,-1]
 
-      if(nknots>0){
-        aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-        nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-      }else{
-        nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-      }
-
-
-      base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      ##Este es el cambio:
+      nodos.spl   <- seq(min(punto[,ell]), max(punto[,ell]), length = (2+nknots))
+      base.beta   <- create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- getbasismatrix(punto[,ell], base.beta)
       naux <- dim(aux)[2]
 
       #Centrado con la integral
-      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
-      spl.final <- aux
+      nodos.spl   <- seq(0, 1, length = (2+nknots))
+      base.beta   <- create.bspline.basis(rangeval = c(0, 1),
+                                          norder = (degree.spline+1),
+                                          breaks = nodos.spl)
+      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.final.new <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
-        spl.final[,j]=aux[,j]-centroj
+        spl.final.new[,j]=aux[,j]-centroj
       }
-      Mat.X.new[[ell]] <- spl.final[,-1]
+      Mat.X.new[[ell]] <- spl.final.new[,-1]
 
       if(np!=1){
         Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
@@ -1407,7 +1420,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
 
     for(k in 1:np){
       for(ell in 1:d){ #A continuación dice nMat pero podría ser nMat.new (si es que no anda cuando np=1)
-        prediccion[,ell] <- as.vector( Xspline.new[,(nMat.new*(ell-1)+1):(nMat.new*ell)] %*% coef.spl[(nMat.new*(ell-1)+1):(nMat.new*ell)] )
+        prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
 
@@ -1419,7 +1432,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
 
 #' Variable selection in classical PLAM with fixed lambdas and fixed nknots
 #' @export
-plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
+plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2, nknots, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3)){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
@@ -1431,7 +1444,7 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
   d <- dim(X)[2]
 
   if(is.factor(Z)){
-    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    q <- nlevels(as.factor(Z))-1
     lev.Z <- levels(Z)
     Z.aux <- matrix(0,n,nlevels(Z)-1)
     for(k in 1:(nlevels(Z)-1)){
@@ -1445,30 +1458,24 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
   nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
   kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
 
-
   Mat.X <- as.list(rep(0,d))
+  grilla.tes <- seq(0,1,length=1000)
   #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
-    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-    if(nknots>0){
-      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-    }else{
-      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-    }
-
-    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+    nodos.spl   <- seq(min(X[,ell]), max(X[,ell]), length = (2+nknots))
+    base.beta   <- create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
-    aux <- fda::getbasismatrix(X[,ell], base.beta)
+    aux <- getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
-    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
     #Centrado con la integral
-    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+    nodos.spl   <- seq(0, 1, length = (2+nknots))
+    base.beta   <- create.bspline.basis(rangeval = c(0, 1),
+                                        norder = (degree.spline+1),
+                                        breaks = nodos.spl)
+    spl.center   <- getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
       centroj=mean(spl.center[,j])
@@ -1477,133 +1484,143 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
     Mat.X[[ell]] <- spl.final[,-1]
 
     Xspline <- cbind(Xspline,Mat.X[[ell]])
-
   }
-  nMat <- dim(Mat.X[[1]])[2] #Decía ell
-  sal <- stats::lm(y~Z.aux+Xspline)
-  xdesign <- cbind(rep(1,n),Z.aux,Xspline)
+  nMat <- dim(Mat.X[[ell]])[2]
+
+  sal  <- lm(y ~ Z.aux+Xspline)
+
+  xdesign <- model.matrix(sal)
+  #sigma.hat <- sal$s
+
+
   #Construyo el beta 0
-  beta.ini <- as.vector(sal$coefficients)
-  #beta.hat <- beta.ini[-1]
-  #coef.lin <- beta.ini[2:(q+1)]
-  #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
+  beta.ini.complete <- as.vector(sal$coefficients)
+  beta0 <- sal$coefficients[1]
+  beta.ini <- as.vector(sal$coefficients)[-1]
   nbetas <- length(beta.ini)
 
   normgammaj <- rep(0,d)
   corte <- 1
   iter <- 0
+
   while( (corte>bound.control) & (iter<MAXITER)){
     iter <- iter +1
-    #print(iter)
-    regresion.hat <- xdesign%*%beta.ini
+    regresion.hat <- xdesign%*%c(beta0, beta.ini)
     res <- y-regresion.hat
-    an <- quantile(abs(res),2*(n^(-1/2)))
-    W <- diag( as.vector((1/2)*(res)^2/(an+(res)^2) ))
 
+    #Lo siguiente computa la matriz Sigma Lambda1, Lambda2
     Sigmalambda <- matrix(0,nbetas,nbetas)
-    for(i in 1:(q+1)){
-      Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])
+    for(i in 1:q){
+      Sigmalambda[i,i] <- scad.d(beta.ini[i],lambda=lambdas1[i])/abs(beta.ini[i])*(1/2)
     }
     for(i in 1:d){
       Hj <- Hj.matrix(X[,i], nknots, degree.spline)
-      gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
+      gammaj <- as.matrix(beta.ini[(q+1+nMat*(i-1)):(nMat*i+q)])
       normgammaj[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
-      Sigmalambda[(q+2+nMat*(i-1)):(nMat*i+(q+1)),(q+2+nMat*(i-1)):(nMat*i+(q+1))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj
+      Sigmalambda[(q+1+nMat*(i-1)):(nMat*i+(q)),(q+1+nMat*(i-1)):(nMat*i+(q))] <- as.numeric(scad.d(normgammaj[i],lambda=lambdas2[i])/(normgammaj[i]))*Hj*(1/2)
     }
 
-    #Sigmalambda <- diag( scad.d(beta.ini,lambda=lambda)/abs(beta.ini))
+    #Ahora voy a computar el estimador reweighted:
+    #Calculamos el vector de pesos wi:
+    Si <- xdesign[,-1]
 
-    #options(show.error.messages = TRUE)
     try.sal <- try(
-      AUX <- solve(t(xdesign)%*%W%*%xdesign + 1/2*n*Sigmalambda)
+      AUX <- (solve(t(Si)%*%Si*(1/n)+Sigmalambda))
     )
 
     if(class(try.sal)[1]!= 'try-error'){
-      beta1 <- as.vector(AUX%*%t(xdesign)%*%W%*%y)
+      beta1 <- as.vector( AUX%*%t(Si)%*%(y-beta0)*(1/n) )
       corte <- my.norm.2(beta.ini-beta1)/my.norm.2(beta.ini)
       beta.ini <- beta1
+      error <- 0
     }else{
       beta1 <- beta.ini
       iter <- MAXITER
+      error <- 1
     }
   }
 
-  beta.hat <- beta1[-1]
-  coef.lin <- beta1[2:(q+1)]
-  coef.spl <- beta1[(q+2):(1+q+nMat*d)]
-  alpha.hat <- beta1[1]
+  coef.lin <- beta1[1:q]
+  coef.spl <- beta1[(q+1):(q+nMat*d)]
+  alpha.hat <- beta0
+  for(i in 1:d){
+    Hj <- Hj.matrix(X[,i], nknots, degree.spline)
+    gammaj <- as.matrix(beta1[(q+1+nMat*(i-1)):(nMat*i+q)])
+    normgammaj[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
+  }
 
   gs.hat <- matrix(0,n,d)
-  #correc <- rep(0,d)
   for(ell in 1:d){
-    #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-    #correc[ell] <- mean(aux)
-    #gs.hat[,ell] <- aux - mean(aux) #Esto ya no lo necesito
     gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
   }
 
-  is.zero <- c(abs(alpha.hat)<bound.control,abs(coef.lin)<bound.control,normgammaj<bound.control)
+  is.zero <- c(abs(coef.lin)<bound.control,normgammaj<bound.control)
 
 
   if(is.null(np.point)){
-    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
-      #list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero)
+    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, error=error)
     return(salida)
   }else{
     if(is.null(dim(np.point))){
       if(q==1){
-        prediccion <- X.new <- as.matrix(np.point)
+        prediccion <- X.new <- punto <- as.matrix(np.point)
       }else{
-        prediccion <- X.new <- t(as.matrix(np.point))
+        prediccion <- X.new <- punto <- t(as.matrix(np.point))
       }
     }else{
-      prediccion <- X.new <- np.point
+      prediccion <- X.new <- punto <- np.point
     }
     np <- dim(X.new)[1]
     Mat.X.new <- as.list(rep(0,d))
     Xspline.new <- NULL
     for(ell in 1:d){
-      grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-      if(nknots>0){
-        aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-        nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-      }else{
-        nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-      }
-
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+      nodos.spl   <- seq(min(punto[,ell]), max(punto[,ell]), length = (2+nknots))
+      base.beta   <- create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
-      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
+      aux <- getbasismatrix(punto[,ell], base.beta)
       naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
       #Centrado con la integral
-      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
-      spl.final <- aux
+      nodos.spl   <- seq(0, 1, length = (2+nknots))
+      base.beta   <- create.bspline.basis(rangeval = c(0, 1),
+                                          norder = (degree.spline+1),
+                                          breaks = nodos.spl)
+      spl.center   <- getbasismatrix(grilla.tes, base.beta)
+      spl.final.new <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
-        spl.final[,j]=aux[,j]-centroj
+        spl.final.new[,j]=aux[,j]-centroj
       }
-      Mat.X.new[[ell]] <- spl.final[,-1]
+      Mat.X.new[[ell]] <- spl.final.new[,-1]
+
+      if(np!=1){
+        Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+      }else{
+        Xspline.new <- c(Xspline.new,Mat.X.new[[ell]])
+      }
 
     }
 
+
+    if(np!=1){
+      nMat.new <- dim(Mat.X.new[[1]])[2]  #ell en lugar de 1
+    }else{
+      nMat.new <- dim(t(as.matrix(Mat.X.new[[1]])))[2]
+    }
+    if(np==1){
+      Xspline.new <- matrix(Xspline.new,np, nMat.new*d)
+    }
 
     for(k in 1:np){
       for(ell in 1:d){
-        #aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-        #prediccion[,ell] <- aux - correc[ell] #Esto ya no lo necesito
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
-      #list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion)
+
+    salida <- list(prediction=regresion.hat, betas=beta1, coef.const=alpha.hat, coef.lin=coef.lin, coef.spl=coef.spl, g.matrix=gs.hat, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, xdesign=xdesign, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, normgammaj=normgammaj, is.zero=is.zero, np.prediction=prediccion, error=error)
     return(salida)
   }
-
 }
 
 
@@ -1664,129 +1681,81 @@ plam.rob.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spli
     dfc <- sum( abs(betas[1:q])> bound.control)
     dfn <- sum( normgammaj > bound.control)
     regresion.hat <- AUX2$prediction
-    tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )
-    #tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )*desvio.hat^2 #Este funciona peor
-    BIC[i] <- mean(tuk) + dfc*(log(n)/n) + dfn*(log(n/nbasis)/(n/nbasis))
+    #tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )
+    tuk <- tukey.loss( (y - regresion.hat)/desvio.hat )*desvio.hat^2 #Este funciona peor
+    BIC[i] <- log( sum(tuk) ) + dfc*(log(n)/n) + dfn*(log(n/nbasis)/(n/nbasis))
   }
 
   position <- which.min(BIC)
   la1 <- grilla[position,1]
   la2 <- grilla[position,2]
 
-  lambdas1 <- rep(grilla[i,1],q)/abs(betas.tildes)
-  lambdas2 <- rep(grilla[i,2],p)/normgammaj.tildes
+  lambdas1 <- rep(la1,q)/abs(betas.tildes)
+  lambdas2 <- rep(la2,p)/normgammaj.tildes
 
   AUXfinal <- plam.rob.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
 
-  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error, BIClambdas=BIC)
+  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error) #list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
   return(salida)
 }
 
 
 #' Selection lambdas with classical BIC criteria with nknots fixed
 #' @export
-select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degree.spline=3, MAXITER=100){
+plam.cl.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3)){
   # y continuos response variable (n)
   # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
   # In case it is a cathegorical variable, class of Z should be 'factor'.
   # X a vector (n) or a matrix (n x d) for the additive part.
   # nknots number of internal knots
   # knots specific internal knots
-
+  q <- dim(Z)[2]
+  p <- dim(X)[2]
   n <- length(y)
-  d <- dim(X)[2]
-
-  if(is.factor(Z)){
-    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
-    lev.Z <- levels(Z)
-    Z.aux <- matrix(0,n,nlevels(Z)-1)
-    for(k in 1:(nlevels(Z)-1)){
-      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
-    }
-  }else{
-    Z.aux <- Z
-    q <- dim(Z)[2]
-  }
-
-  nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-  kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-
-  Mat.X <- as.list(rep(0,d))
-  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
-  Xspline <- NULL
-  for (ell in 1:d){
-    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-    if(nknots>0){
-      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-    }else{
-      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-    }
-
-    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
-                                        norder = (degree.spline+1),
-                                        breaks = nodos.spl)
-    aux <- fda::getbasismatrix(X[,ell], base.beta)
-    naux <- dim(aux)[2]
-    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
-
-    #Centrado con la integral
-    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
-    spl.final <- aux
-    for (j in 1:naux){
-      centroj=mean(spl.center[,j])
-      spl.final[,j]=aux[,j]-centroj
-    }
-    Mat.X[[ell]] <- spl.final[,-1]
-
-  }
-  nMat <- dim(Mat.X[[1]])[2] #Decía ell
-  sal <- stats::lm(y~Z.aux+Xspline)
-  xdesign <- cbind(rep(1,n),Z.aux,Xspline)
-  #Construyo el beta 0
-  beta0 <- beta.ini <- as.vector(sal$coefficients)
-  #beta.hat <- beta.ini[-1]
-  #coef.lin <- beta.ini[2:(q+1)]
-  #coef.spl <- beta.ini[(q+2):(1+q+nMat*d)]
-  nbetas <- length(beta.ini)
-  normgammaj0 <- rep(0,d)
-  for(i in 1:d){
+  #Calculo el estimador sin penalizar
+  unpen <- plam.cl(y=y, Z=Z, X=X, nknots=nknots, degree.spline=degree.spline)
+  betas.tildes <- unpen$coef.lin
+  nMat <- unpen$nMat
+  normgammaj.tildes <- rep(0,p)
+  for(i in 1:p){
     Hj <- Hj.matrix(X[,i], nknots, degree.spline)
-    gammaj <- as.matrix(beta.ini[(q+2+nMat*(i-1)):(nMat*i+(q+1))])
-    normgammaj0[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
+    gammaj <- as.matrix(unpen$coef.spl[(1+nMat*(i-1)):(nMat*i)])
+    normgammaj.tildes[i] <- sqrt( t(gammaj)%*%Hj%*%gammaj )
   }
 
-  grilla <- expand.grid(grid.lambda1,grid.lambda2)
+  grilla <- expand.grid(grid.la1,grid.la2)
   dim.grilla <- dim(grilla)[1]
   BIC <- rep(0,dim.grilla)
+  error <- 0
   for(i in 1:dim.grilla){
+    #cat("grilla de lambdas = ", grilla[i,1], "\n")
     #print(i)
-    lambdas1 <- rep(grilla[i,1],q+1)
-    lambdas2 <- rep(grilla[i,2],d)
-    AUX2 <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
+    lambdas1 <- rep(grilla[i,1],q)/abs(betas.tildes)
+    lambdas2 <- rep(grilla[i,2],p)/normgammaj.tildes
+    AUX2 <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+    error <- error+AUX2$error
     betas <- AUX2$betas
     nbasis <- AUX2$nbasis
-    xdesign <- AUX2$xdesign
+    #desvio.hat <- AUX2$sigma.hat
     normgammaj <- AUX2$normgammaj
-    dfc <- sum( abs(betas[1:(q+1)])>10^(-3))
-    dfn <- sum( normgammaj >10^(-3))
-    regresion.hat <- xdesign%*%betas
-    tuk <- (1/2)*( (y - regresion.hat) )^2
-    BIC[i] <- mean(tuk) + dfn*(log(n/nbasis)/(n/nbasis)) + dfc*(log(n)/n)
+
+    dfc <- sum( abs(betas[1:q])> bound.control)
+    dfn <- sum( normgammaj > bound.control)
+    regresion.hat <- AUX2$prediction
+    tuk <- (y - regresion.hat)^2
+    BIC[i] <- log( sum(tuk) ) + dfc*(log(n)/n) + dfn*(log(n/nbasis)/(n/nbasis))
   }
 
   position <- which.min(BIC)
   la1 <- grilla[position,1]
   la2 <- grilla[position,2]
 
-  lambdas1 <- la1/abs(beta0[1:(q+1)])
-  lambdas2 <- la2/normgammaj0
+  lambdas1 <- rep(la1,q)/abs(betas.tildes)
+  lambdas2 <- rep(la2,p)/normgammaj.tildes
 
-  AUXfinal <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
+  AUXfinal <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
 
-  salida <- list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
+  salida <- c(la1=list(la1), la2=list(la2), lambdas1=list(lambdas1), lambdas2=list(lambdas2), AUXfinal,errortotal=error) #list(la1=la1, la2=la2, lambdas1=lambdas1, lambdas2=lambdas2, AUXfinal)
   return(salida)
 }
 
@@ -1795,7 +1764,7 @@ select.cl.lambdas <- function(y, Z, X, grid.lambda1, grid.lambda2, nknots, degre
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=5){ #Estaba en 2
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){ #Estaba en 2
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
@@ -1892,7 +1861,7 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     AUXfinal <- plam.rob.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
-    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), BICnknots=BIC, AUXfinal)
+    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
     return(salida)
   }else{
     sal <- plam.rob(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit)
@@ -1905,66 +1874,83 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.cl.vs <- function(y, Z, X, np.point = NULL, vs=TRUE, nknots=NULL, knots=NULL, degree.spline=3, MAXITER=100, bound.control=10^(-3)){
+plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){ #Estaba en 2
   if(vs=="TRUE"){
     d <- dim(X)[2]
-    lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
-    lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
-    lim.sup.nknots <- lim.sup.kj - degree.spline - 1
-    lim.inf.nknots <- lim.inf.kj - degree.spline - 1
-    grid.nknots <- lim.inf.nknots:lim.sup.nknots
+    q <- dim(Z)[2]
+    n <- length(y)
+    if(is.null(grid.nknots)){
+      r <- degree.spline-1
+      lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2,degree.spline+1))
+      lim.sup.kj <- floor(8+2*n^(1/(2*r+1)))
+      lim.sup.nknots <- lim.sup.kj - degree.spline - 1
+      lim.inf.nknots <- lim.inf.kj - degree.spline - 1
+      grid.nknots <- lim.inf.nknots:lim.sup.nknots
+    }else{
+      lim.inf.nknots <- min(grid.nknots)
+      lim.sup.nknots <- max(grid.nknots)
+    }
+    ngrid <- length(grid.nknots)
 
-    BIC <- rep(0,length(grid.nknots))
+    BIC <- rep(NA,ngrid)
+    la1.matrix <- matrix(0,length(grid.nknots),1)
+    la2.matrix <- matrix(0,length(grid.nknots),1)
+    lambdas1.matrix <- matrix(0,length(grid.nknots),q)
+    lambdas2.matrix <- matrix(0,length(grid.nknots),d)
 
-    grid.lambda1 <- seq(0,0.5,0.1)
-    grid.lambda2 <- seq(0,0.5,0.1)
+    if(is.null(grid.la1)){
+      grid.la1 <- seq(0,0.35,0.02) #seq(0.20,0.40,0.05) #seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
+    }
+    if(is.null(grid.la2)){
+      grid.la2 <- seq(0,0.25,0.02) #seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
+    }
+    contador.k.malos <- 0
 
     for(nknots in grid.nknots){
-      sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
-      lambda1 <- sal$la1
-      lambda2 <- sal$la2
-      if(lambda1==0.5){
-        if(lambda2==0.5){
-          grid.lambda1 <- seq(0.5,1,0.1)
-          grid.lambda2 <- seq(0.5,1,0.1)
-          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
-          lambda1 <- sal$la1
-          lambda2 <- sal$la2
-        }else{
-          grid.lambda1 <- seq(0.5,1,0.1)
-          grid.lambda2 <- seq(0,0.5,0.1)
-          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
-          lambda1 <- sal$la1
-          lambda2 <- sal$la2
-        }
-      }else{
-        if(lambda2==0.5){
-          grid.lambda1 <- seq(0,0.5,0.1)
-          grid.lambda2 <- seq(0.5,1,0.1)
-          sal <- select.cl.lambdas(y=y, Z=Z, X=X, grid.lambda1=grid.lambda1, grid.lambda2=grid.lambda2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
-          lambda1 <- sal$la1
-          lambda2 <- sal$la2
-        }
+      print(nknots)
+
+      if(contador.k.malos>k.malos.max){
+        break
       }
-      #print(lambda1)
-      #print(lambda2)
+
+      sal <- plam.cl.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, MAXITER=MAXITER)
+      #print(sal$errortotal)
+      if(sal$errortotal>5){
+        #print(contador.k.malos)
+        contador.k.malos <- contador.k.malos+1
+      }
+      la1 <- sal$la1
+      la2 <- sal$la2
+
       lambdas1 <- sal$lambdas1
       lambdas2 <- sal$lambdas2
 
-      regresion.hat <- sal$regresion.hat
+      #desvio.hat <- sal$sigma.hat ## Esto no va creo
+      regresion.hat <- sal$prediction
 
-      nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
-      BIC[nknots-lim.inf.nknots+1] <- log( sum((y - regresion.hat.r)^2) )+ (log(n)/(2*n))*(nbasis+q+1)
+      nbasis <- d*(nknots + degree.spline)
+      tuk <- (y - regresion.hat)^2
+      BIC[nknots-lim.inf.nknots+1] <- log(sum(tuk))+ (log(n)/(2*n))*(nbasis+q+1) ## Ojo con el BIC otra vez.va a fallar seguro porque ya no existe desvio.hat
+      la1.matrix[nknots-lim.inf.nknots+1,] <- la1
+      la2.matrix[nknots-lim.inf.nknots+1,] <- la2
+      lambdas1.matrix[nknots-lim.inf.nknots+1,] <- sal$lambdas1
+      lambdas2.matrix[nknots-lim.inf.nknots+1,] <- sal$lambdas2
     }
     posicion <- which.min(BIC)
     nknots <- posicion+lim.inf.nknots-1
-    AUXfinal <- plam.cl.vs.nknots.lambdas(y=y, Z=Z, X=X, lambdas1=lambdas1, lambdas2=lambdas2, nknots=nknots, degree.spline=degree.spline, MAXITER=MAXITER)
-    salida <- list(lambda1=lambda1, lambda2=lambda2, AUXfinal)
+    lambdas1 <- lambdas1.matrix[posicion,]
+    lambdas2 <- lambdas2.matrix[posicion,]
+    la1 <- as.numeric(la1.matrix[posicion,])
+    la2 <- as.numeric(la2.matrix[posicion,])
+
+    #Este paso que sigue lo necesito?
+    AUXfinal <- plam.cl.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
+
+
+    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
     return(salida)
   }else{
-    sal <- plam.cl(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline)
+    sal <- plam.cl(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit)
     return(sal)
   }
 }
-
-
