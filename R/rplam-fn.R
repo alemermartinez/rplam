@@ -1377,7 +1377,7 @@ plam.rob.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      base.beta   <- fda::create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(punto[,ell], base.beta)
@@ -1581,7 +1581,7 @@ plam.cl.vs.nknots.lambdas <- function(y, Z, X, np.point=NULL, lambdas1, lambdas2
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      base.beta <- fda::create.bspline.basis(rangeval = c(min(punto[,ell]), max(punto[,ell])),
+      base.beta <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(punto[,ell], base.beta)
@@ -1838,7 +1838,7 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     AUXfinal <- plam.rob.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
-    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
+    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal, BIC=BIC)
     return(salida)
   }else{
     sal <- plam.rob(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit)
@@ -1922,7 +1922,7 @@ plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.l
     AUXfinal <- plam.cl.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
-    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
+    salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal, BIC=BIC)
     return(salida)
   }else{
     sal <- plam.cl(y=y, Z=Z, X=X, np.point = np.point, nknots=nknots, knots=knots, degree.spline=degree.spline, maxit=maxit)
