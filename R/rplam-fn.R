@@ -1766,7 +1766,7 @@ plam.cl.vs.lambdas <- function(y, Z, X, grid.la1, grid.la2, nknots, degree.splin
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){ #Estaba en 2
+plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=10){ #Un valor alto si quiero que recorra muchos
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
@@ -1791,10 +1791,10 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     lambdas2.matrix <- matrix(0,length(grid.nknots),d)
 
     if(is.null(grid.la1)){
-      grid.la1 <- seq(0.15,0.35,0.05) #seq(0.20,0.40,0.05) #seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
+      grid.la1 <- seq(0,0.5,0.1)
     }
     if(is.null(grid.la2)){
-      grid.la2 <- seq(0.05,0.25,0.05) #seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
+      grid.la2 <- seq(0,0.5,0.1)
     }
     contador.k.malos <- 0
 
@@ -1813,30 +1813,6 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
       }
       la1 <- sal$la1
       la2 <- sal$la2
-
-      #if(la1==0.2){
-      # if(la2==0.2){
-      #   grid.la1 <- seq(0.2,0.4,0.05)
-      #   grid.la2 <- seq(0.2,0.4,0.05)
-      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-      #   la1 <- sal$la1
-      #   la2 <- sal$la2
-      # }else{
-      #   grid.la1 <- seq(0.2,0.4,0.05)
-      #   grid.la2 <- seq(0,0.2,0.05)
-      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-      #   la1 <- sal$la1
-      #   la2 <- sal$la2
-      # }
-      #}else{
-      # if(la2==0.2){
-      #   grid.la1 <- seq(0,0.2,0.05)
-      #   grid.la2 <- seq(0.2,0.4,0.04)
-      #   sal <- plam.rob.vs.lambdas(y=y, Z=Z, X=X, grid.la1=grid.la1, grid.la2=grid.la2, nknots=nknots, degree.spline=degree.spline, maxit=maxit, method=method, MAXITER=MAXITER)
-      #   la1 <- sal$la1
-      #   la2 <- sal$la2
-      # }
-      #}
 
       lambdas1 <- sal$lambdas1
       lambdas2 <- sal$lambdas2
@@ -1859,7 +1835,6 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
     la1 <- as.numeric(la1.matrix[posicion,])
     la2 <- as.numeric(la2.matrix[posicion,])
 
-    #Este paso que sigue lo necesito?
     AUXfinal <- plam.rob.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
@@ -1876,7 +1851,7 @@ plam.rob.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=2){ #Estaba en 2
+plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.la1=NULL, grid.la2=NULL, degree.spline=3, maxit=100, MAXITER=100, bound.control=10^(-3), k.malos.max=10){
   if(vs=="TRUE"){
     d <- dim(X)[2]
     q <- dim(Z)[2]
@@ -1901,10 +1876,10 @@ plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.l
     lambdas2.matrix <- matrix(0,length(grid.nknots),d)
 
     if(is.null(grid.la1)){
-      grid.la1 <- seq(0,0.35,0.02) #seq(0.20,0.40,0.05) #seq(0.05,0.2,0.05) #seq(0.15,0.25,0.05) #seq(0,0.2,0.05)
+      grid.la1 <- seq(0,0.5,0.1)
     }
     if(is.null(grid.la2)){
-      grid.la2 <- seq(0,0.25,0.02) #seq(0.05,0.2,0.05) #seq(0.55,0.75,0.1) #seq(0,0.2,0.05)
+      grid.la2 <- seq(0,0.5,0.1)
     }
     contador.k.malos <- 0
 
@@ -1927,12 +1902,11 @@ plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.l
       lambdas1 <- sal$lambdas1
       lambdas2 <- sal$lambdas2
 
-      #desvio.hat <- sal$sigma.hat ## Esto no va creo
       regresion.hat <- sal$prediction
 
       nbasis <- d*(nknots + degree.spline)
       tuk <- (y - regresion.hat)^2
-      BIC[nknots-lim.inf.nknots+1] <- log(sum(tuk))+ (log(n)/(2*n))*(nbasis+q+1) ## Ojo con el BIC otra vez.va a fallar seguro porque ya no existe desvio.hat
+      BIC[nknots-lim.inf.nknots+1] <- log(sum(tuk))+ (log(n)/(2*n))*(nbasis+q+1)
       la1.matrix[nknots-lim.inf.nknots+1,] <- la1
       la2.matrix[nknots-lim.inf.nknots+1,] <- la2
       lambdas1.matrix[nknots-lim.inf.nknots+1,] <- sal$lambdas1
@@ -1945,8 +1919,7 @@ plam.cl.vs <- function(y, Z, X, np.point=NULL, vs=TRUE, grid.nknots=NULL, grid.l
     la1 <- as.numeric(la1.matrix[posicion,])
     la2 <- as.numeric(la2.matrix[posicion,])
 
-    #Este paso que sigue lo necesito?
-    AUXfinal <- plam.cl.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots) #plam.rob.vs.nknots.lambdas(y, Z, X, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
+    AUXfinal <- plam.cl.vs.nknots.lambdas(y, Z, X, np.point=np.point, lambdas1 = lambdas1, lambdas2 = lambdas2, nknots = nknots)
 
 
     salida <- c(la1=list(la1), la2=list(la2),lambda1=list(lambdas1),lambda2=list(lambdas2), AUXfinal)
