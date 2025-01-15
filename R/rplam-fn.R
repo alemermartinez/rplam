@@ -81,7 +81,7 @@ my.norm.2 <- function(x){
 }
 
 
-#' Knot selection for the least-squares estimator
+#' Selection of the number of knots for the least-squares estimator
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
@@ -91,12 +91,12 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 
   r <- degree.spline-1
   if(r<1){
-    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+    cat("No se cumple la hipótesis de: 1<=r")
   }
 
   #Corregir para que solo tire un warning
   if(is.factor(Z)){
-    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    q <- nlevels(as.factor(Z))-1
     lev.Z <- levels(Z)
     Z.aux <- matrix(0,n,nlevels(Z)-1)
     for(k in 1:(nlevels(Z)-1)){
@@ -130,15 +130,13 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-      #Centrado con la integral
+      #Centered with the integral
       spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
@@ -149,11 +147,12 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 
       Xspline <- cbind(Xspline,Mat.X[[ell]])
 
-
     }
-    nMat <- dim(Mat.X[[1]])[2] #Decía ell
+    nMat <- dim(Mat.X[[1]])[2]
 
+    #Computing the least-squares regression estimator
     sal <- stats::lm(y~Z.aux+Xspline)
+
     betas <- as.vector(sal$coefficients)
     beta.hat <- betas[-1]
     coef.lin <- betas[2:(q+1)]
@@ -162,22 +161,25 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 
     gs.hat <- matrix(0,n,d)
     for(ell in 1:d){
-      #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-      #gs.hat[,ell] <- aux #- mean(aux) No se necesita porque los splines integran 0
       gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
     }
 
-    regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+    regresion.hat <- stats::predict(sal) #which is also alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
-    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
+    nbasis <- d*(nknots + degree.spline)
+
+    #Computing the BIC criterion
+    BIC[nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 is the amount of linear components
   }
+
   posicion <- which.min(BIC)
-  nknots <- posicion-1 #Decía "knots" en lugar de decir nknots... creo
+  nknots <- posicion-1
 
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
+
   salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = nbasis, kj=kj)
+
   return(salida)
 }
 
