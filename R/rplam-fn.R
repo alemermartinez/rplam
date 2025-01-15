@@ -17,6 +17,7 @@
 #'
 #' @export
 #' @importFrom stats lm
+#' @importFrom stats median
 #' @importFrom fda getbasismatrix
 #' @importFrom fda create.bspline.basis
 #' @importFrom robustbase lmrob
