@@ -2,10 +2,24 @@
 % Please edit documentation in R/rplam-fn.R
 \name{my.norm.2}
 \alias{my.norm.2}
-\title{Norm 2}
+\title{Euclidean norm of a vector}
 \usage{
 my.norm.2(x)
 }
+\arguments{
+\item{x}{A real vector.}
+}
+\value{
+The Euclidean norm of the input vector.
+}
 \description{
-Norm 2
+This function calculates the Euclidean norm of a vector.
+}
+\examples{
+x <- seq(-2, 2, length=10)
+my.norm.2(x)
+
+}
+\author{
+Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
 }

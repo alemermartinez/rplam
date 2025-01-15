@@ -2,12 +2,12 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.cl}
 \alias{select.nknots.cl}
-\title{Classical knot selection for plam}
+\title{Selection of the number of knots for the least-squares estimator}
 \usage{
 select.nknots.cl(y, Z, X, degree.spline = 3)
 }
 \description{
-Classical knot selection for plam
+Selection of the number of knots for the least-squares estimator
 }
 \examples{
 x <- seq(-2, 2, length=10)
