@@ -8,6 +8,7 @@ src/*.dll
 *.Rproj
 
 # History files
+.Rhistory
 .Rapp.history
 
 # Session Data files
