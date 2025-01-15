@@ -80,10 +80,12 @@ fit.rob$kj
 The estimations obtained for each linear coefficient for both classical
 and robust approaches are shown it the following Table.
 
-|                 |  Classical|   Robust|
+|                 | Classical |  Robust |
 |:----------------|----------:|--------:|
-| *β*<sub>0</sub> |     39.340|  37.9982|
-| *β*<sub>1</sub> |     -0.575|  -0.5099|
+| *β*<sub>0</sub> |    39.340 | 37.9982 |
+| *β*<sub>1</sub> |    -0.575 | -0.5099 |
+
+Table 1
 
 The following three plots correspond to the classical (in red and dashed
 line) and robust (in blue and solid line) fits for the additive
@@ -144,10 +146,12 @@ fit.del.cl$kj
 New estimated linear coefficients with the previous ones are shown in
 the following table.
 
-|                 |  Classical|   Robust|  Classical on clean data|
+|                 | Classical |  Robust | Classical on clean data |
 |:----------------|----------:|--------:|------------------------:|
-| *β*<sub>0</sub> |     39.340|  37.9982|                  37.2467|
-| *β*<sub>1</sub> |     -0.575|  -0.5099|                  -0.4733|
+| *β*<sub>0</sub> |    39.340 | 37.9982 |                 37.2467 |
+| *β*<sub>1</sub> |    -0.575 | -0.5099 |                 -0.4733 |
+
+Table 2
 
 The following plots correspond to the new curves obtained with the
 classical fit (in red dashed line) using the data without the potential
