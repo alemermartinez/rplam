@@ -2,13 +2,39 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.rob.am}
 \alias{select.nknots.rob.am}
-\title{Robust knot selection for plam}
+\title{Selection of the number of knots for the robust estimator for additive models}
 \usage{
 select.nknots.rob.am(y, X, degree.spline = 3, maxit = 100)
 }
+\arguments{
+\item{y}{a vector of real numbers.}
+
+\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+
+\item{degree.spline}{spline degree. Defaults to \code{'3'}.}
+
+\item{maxit}{maximum number of iterations for computing the S- and the MM-regression estimators.}
+}
+\value{
+
+}
 \description{
-Robust knot selection for plam
+This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the Tukey's loss function.
 }
 \examples{
-x <- seq(-2, 2, length=10)
+set.seed(11)
+n <- 100
+x1 <- runif(n,-1,1)
+x2 <- runif(n,-1,1)
+err <- rnorm(n, 0, 0.1)
+regre <- 2+x1^3+2*sin(pi*x2)
+y <- regre + err
+X <- cbind(x1,x2)
+sal <- select.nknots.rob.am(y, X)
+
+}
+\references{
+Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+
+\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }

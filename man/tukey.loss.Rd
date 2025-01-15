@@ -2,10 +2,26 @@
 % Please edit documentation in R/rplam-fn.R
 \name{tukey.loss}
 \alias{tukey.loss}
-\title{Tukey Loss Function}
+\title{Tukey's loss function}
 \usage{
 tukey.loss(x, k = 4.685)
 }
+\arguments{
+\item{x}{A real vector.}
+
+\item{k}{tuning constant.}
+}
+\value{
+A vector of the same length as x which corresponds to values obtained by the Tukey's loss function.
+}
 \description{
-Tukey Loss Function
+This function computes the Tukey's loss function.
+}
+\examples{
+x <- seq(-2, 2, length=10)
+tukey.loss(x)
+
+}
+\author{
+Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
 }

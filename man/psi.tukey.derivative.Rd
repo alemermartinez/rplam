@@ -2,10 +2,26 @@
 % Please edit documentation in R/rplam-fn.R
 \name{psi.tukey.derivative}
 \alias{psi.tukey.derivative}
-\title{Derivative of the Tukey Loss Function}
+\title{Derivative of the Tukey's loss function}
 \usage{
-psi.tukey.derivative(r, k = 4.685)
+psi.tukey.derivative(x, k = 4.685)
+}
+\arguments{
+\item{x}{A real vector.}
+
+\item{k}{tuning constant.}
+}
+\value{
+A vector of the same length as x which corresponds to the derivatives of the Tukey's loss function.
 }
 \description{
-Derivative of the Tukey Loss Function
+This function calculates the derivative of the Tukey's loss function.
+}
+\examples{
+x <- seq(-2, 2, length=10)
+psi.tukey.derivative(x)
+
+}
+\author{
+Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
 }
