@@ -30,10 +30,24 @@ psi.tukey <- function(r, k=4.685){
   return(w)
 }
 
-#' Derivative of the Tukey Loss Function
+#' Derivative of the Tukey's loss function
+#'
+#' This function calculates the derivative of the Tukey's loss function.
+#'
+#' @param x A real vector.
+#' @param k tuning constant.
+#'
+#' @return A vector of the same length as r which corresponds to the derivatives of the Tukey's loss function.
+#'
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#'
+#' @examples
+#' x <- seq(-2, 2, length=10)
+#' psi.tukey.derivative(x)
+#'
 #' @export
-psi.tukey.derivative <- function(r, k=4.685){
-  u <- abs(r/k)
+psi.tukey.derivative <- function(x, k=4.685){
+  u <- abs(x/k)
   w <- ((1-u)*(1+u))^2-4*u^2*((1-u)*(1+u))
   w[u>1] <- 0
   return(w)
