@@ -81,7 +81,7 @@ my.norm.2 <- function(x){
 }
 
 
-#' Selection of the number of knots for the least-squares estimator
+#' Selection of the number of knots for the least-squares estimator under a PLAM
 #'
 #' This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
 #'
@@ -115,6 +115,7 @@ my.norm.2 <- function(x){
 #' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
 #' sal <- select.nknots.cl(y, Z, X)
+#'
 #' @export
 select.nknots.cl <- function(y, Z, X, degree.spline = 3){
   n <- length(y)
@@ -215,18 +216,46 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 }
 
 
-#' Classical knot selection for additive models
+#' Selection of the number of knots for the least-squares estimator for additive models
+#'
+#' This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
+#'
+#' @param y a vector of real numbers.
+#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param degree.spline spline degree. Defaults to \code{'3'}.
+#'
+#' @return A list with the following components:
+#' \item{nknots}{Number of internal knots selected by the procedure.}
+#' \item{grid.nknots}{Grid of internal knots used.}
+#' \item{BIC}{Values of the BIC criterion for each element of the grid.}
+#' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#'
+#' @references
+#' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+#'
+#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#'
 #' @examples
-#' x <- seq(-2, 2, length=10)
+#' set.seed(11)
+#' n <- 100
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' X <- cbind(x1,x2)
+#' sal <- select.nknots.cl.am(y, X)
+#'
 #' @export
-select.nknots.cl.am <- function(y,X,degree.spline=3){
+select.nknots.cl.am <- function(y, X, degree.spline=3){
   q <- 0
   n <- length(y)
   d <- dim(X)[2]
 
   r <- degree.spline-1
   if(r<1){
-    cat("No se cumple la hipótesis de: 1<=r<=ell-2")
+    cat("No se cumple la hipótesis de: 1<=r")
   }
 
   lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2, degree.spline+1))
@@ -240,7 +269,6 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
   for(nknots in grid.nknots){
 
     Mat.X <- as.list(rep(0,d))
-    #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
     Xspline <- NULL
     for (ell in 1:d){
       grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
@@ -252,15 +280,13 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(X[,ell], base.beta)
       naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-      #Centrado con la integral
+      #Centered with the integral
       spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
@@ -272,7 +298,7 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
       Xspline <- cbind(Xspline,Mat.X[[ell]])
 
     }
-    nMat <- dim(Mat.X[[1]])[2] #Decía ell
+    nMat <- dim(Mat.X[[1]])[2]
 
     sal <- stats::lm(y~Xspline)
     betas <- as.vector(sal$coefficients)
@@ -283,22 +309,22 @@ select.nknots.cl.am <- function(y,X,degree.spline=3){
 
     gs.hat <- matrix(0,n,d)
     for(ell in 1:d){
-      #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-      #gs.hat[,ell] <- aux #- mean(aux) No se necesita porque los splines integran 0
       gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
     }
 
-    regresion.hat <- stats::predict(sal) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+    regresion.hat <- stats::predict(sal)
+    nbasis <- d*(nknots + degree.spline)
 
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline + 1)
-    BIC[nknots-lim.inf.nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1) #q+1 es la cantidad de lineales
+    BIC[nknots-lim.inf.nknots+1] <- log(sum((y - regresion.hat)^2))+(log(n)/(2*n))*(nbasis+q+1)
   }
   posicion <- which.min(BIC)
-  nknots <- posicion+lim.inf.nknots-1 #Decía "knots" en lugar de decir nknots... creo
+  nknots <- posicion+lim.inf.nknots-1
 
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
+
   salida <- list(nknots=nknots, BIC=BIC, grid.nknots=grid.nknots, nbasis = nbasis, kj=kj)
+
   return(salida)
 }
 
