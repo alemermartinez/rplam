@@ -82,8 +82,39 @@ my.norm.2 <- function(x){
 
 
 #' Selection of the number of knots for the least-squares estimator
+#'
+#' This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
+#'
+#' @param y a vector of real numbers.
+#' @param Z a matrix of numbers corresponding to the covariates entering linearly into the model.
+#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param degree.spline spline degree. Defaults to \code{'3'}.
+#'
+#' @return A list with the following components:
+#' \item{nknots}{Number of internal knots selected by the procedure.}
+#' \item{grid.nknots}{Grid of internal knots used.}
+#' \item{BIC}{Values of the BIC criterion for each element of the grid.}
+#' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#'
+#' @references
+#' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+#'
+#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#'
 #' @examples
-#' x <- seq(-2, 2, length=10)
+#' set.seed(11)
+#' n <- 100
+#' z1 <- rnorm(n)
+#' z2 <- rbinom(n, 4, 1/2)
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' Z <- cbind(z1,z2)
+#' X <- cbind(x1,x2)
+#' sal <- select.nknots.cl(y, Z, X)
 #' @export
 select.nknots.cl <- function(y, Z, X, degree.spline = 3){
   n <- length(y)
