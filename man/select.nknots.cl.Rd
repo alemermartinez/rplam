@@ -2,13 +2,42 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.cl}
 \alias{select.nknots.cl}
-\title{Selection of the number of knots for the least-squares estimator}
+\title{Selection of the number of knots for the least-squares estimator under a PLAM}
 \usage{
 select.nknots.cl(y, Z, X, degree.spline = 3)
 }
+\arguments{
+\item{y}{a vector of real numbers.}
+
+\item{Z}{a matrix of numbers corresponding to the covariates entering linearly into the model.}
+
+\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+
+\item{degree.spline}{spline degree. Defaults to \code{'3'}.}
+}
+\value{
+
+}
 \description{
-Selection of the number of knots for the least-squares estimator
+This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
 }
 \examples{
-x <- seq(-2, 2, length=10)
+set.seed(11)
+n <- 100
+z1 <- rnorm(n)
+z2 <- rbinom(n, 4, 1/2)
+x1 <- runif(n,-1,1)
+x2 <- runif(n,-1,1)
+err <- rnorm(n, 0, 0.1)
+regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+y <- regre + err
+Z <- cbind(z1,z2)
+X <- cbind(x1,x2)
+sal <- select.nknots.cl(y, Z, X)
+
+}
+\references{
+Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+
+\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }

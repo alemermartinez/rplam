@@ -2,13 +2,37 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.cl.am}
 \alias{select.nknots.cl.am}
-\title{Classical knot selection for additive models}
+\title{Selection of the number of knots for the least-squares estimator for additive models}
 \usage{
 select.nknots.cl.am(y, X, degree.spline = 3)
 }
+\arguments{
+\item{y}{a vector of real numbers.}
+
+\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+
+\item{degree.spline}{spline degree. Defaults to \code{'3'}.}
+}
+\value{
+
+}
 \description{
-Classical knot selection for additive models
+This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
 }
 \examples{
-x <- seq(-2, 2, length=10)
+set.seed(11)
+n <- 100
+x1 <- runif(n,-1,1)
+x2 <- runif(n,-1,1)
+err <- rnorm(n, 0, 0.1)
+regre <- 2+x1^3+2*sin(pi*x2)
+y <- regre + err
+X <- cbind(x1,x2)
+sal <- select.nknots.cl.am(y, X)
+
+}
+\references{
+Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+
+\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }
