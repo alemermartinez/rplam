@@ -61,18 +61,31 @@ psi.w <- function(r, k= 4.685){
   return(w)
 }
 
-#' Norm 2
+#' Euclidean norm of a vector
+#'
+#' This function calculates the Euclidean norm of a vector.
+#'
+#' @param x A real vector.
+#'
+#' @return The Euclidean norm of the input vector.
+#'
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#'
+#' @examples
+#' x <- seq(-2, 2, length=10)
+#' my.norm.2(x)
+#'
 #' @export
 my.norm.2 <- function(x){
   return( sqrt(sum(x^2)) )
 }
 
 
-#' Classical knot selection for plam
+#' Knot selection for the least-squares estimator
 #' @examples
 #' x <- seq(-2, 2, length=10)
 #' @export
-select.nknots.cl <- function(y,Z,X,degree.spline=3){
+select.nknots.cl <- function(y, Z, X, degree.spline = 3){
   n <- length(y)
   d <- dim(X)[2]
 
