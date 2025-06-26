@@ -545,16 +545,13 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' @examples
 #' set.seed(11)
 #' n <- 100
-#' z1 <- rnorm(n)
-#' z2 <- rbinom(n, 4, 1/2)
 #' x1 <- runif(n,-1,1)
 #' x2 <- runif(n,-1,1)
 #' err <- rnorm(n, 0, 0.1)
-#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+#' regre <- 2+x1^3+2*sin(pi*x2)
 #' y <- regre + err
-#' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- plam.cl(y, Z, X)
+#' sal <- select.nknots.rob.am(y, X)
 #'
 #' @export
 select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
@@ -694,13 +691,16 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 #' @examples
 #' set.seed(11)
 #' n <- 100
+#' z1 <- rnorm(n)
+#' z2 <- rbinom(n, 4, 1/2)
 #' x1 <- runif(n,-1,1)
 #' x2 <- runif(n,-1,1)
 #' err <- rnorm(n, 0, 0.1)
-#' regre <- 2+x1^3+2*sin(pi*x2)
+#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
 #' y <- regre + err
+#' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- select.nknots.rob.am(y, X)
+#' sal <- plam.cl(y, Z, X)
 #'
 #' @export
 plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
