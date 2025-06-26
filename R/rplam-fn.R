@@ -387,7 +387,7 @@ select.nknots.cl.am <- function(y, X, degree.spline=3){
 #' @return A list with the following components:
 #' \item{nknots}{Number of internal knots selected by the procedure.}
 #' \item{grid.nknots}{Grid of internal knots used.}
-#' \item{BIC}{Values of the BIC criterion for each element of the grid.}
+#' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
 #' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
 #'
@@ -516,7 +516,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
 
-  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = nbasis, kj = kj)
+  salida <- list(nknots=nknots, grid.nknots=grid.nknots, RBIC=RBIC, kj = kj, nbasis = nbasis)
 
   return(salida)
 }
@@ -534,7 +534,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' @return A list with the following components:
 #' \item{nknots}{Number of internal knots selected by the procedure.}
 #' \item{grid.nknots}{Grid of internal knots used.}
-#' \item{BIC}{Values of the BIC criterion for each element of the grid.}
+#' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
 #' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
 #'
@@ -573,7 +573,6 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
   grid.nknots <- lim.inf.nknots:lim.sup.nknots
 
   RBIC <- rep(0,length(grid.nknots))
-
 
   for(nknots in grid.nknots){
     Mat.X <- as.list(rep(0,d))
@@ -652,29 +651,54 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
   nbasis <- d*(nknots + degree.spline)
   kj <- nknots + degree.spline
 
-  salida <- list(nknots=nknots, RBIC=RBIC, grid.nknots=grid.nknots, nbasis = nbasis, kj = kj)
+  salida <- list(nknots=nknots, grid.nknots=grid.nknots, RBIC=RBIC, kj = kj, nbasis = nbasis)
 
   return(salida)
 }
 
 
-#' Classical Partial Linear Additive Model
+#' Classical estimator for partially linear additive models
+#'
+#' This function computes the least-squares based estimator for partially linear additive models.
+#'
+#' @param y a vector of real numbers.
+#' @param Z a matrix of numbers corresponding to the covariates entering in the linear component of the model.
+#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X.
+#' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.
+#' @param degree.spline spline degree. Defaults to \code{'3'}.
+#'
+#' @return A list with the following components:
+#' \item{nknots}{Number of internal knots selected by the procedure.}
+#' \item{grid.nknots}{Grid of internal knots used.}
+#' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
+#' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#'
+#' @references
+#' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+#'
+#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#'
 #' @examples
-#' x <- seq(-2, 2, length=10)
+#' set.seed(11)
+#' n <- 100
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' X <- cbind(x1,x2)
+#' sal <- select.nknots.rob.am(y, X)
+#'
 #' @export
-plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3){
-  # y continuos response variable (n)
-  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
-  # In case it is a cathegorical variable, class of Z should be 'factor'.
-  # X a vector (n) or a matrix (n x d) for the additive part.
-  # nknots number of internal knots
-  # knots specific internal knots
+plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 
   n <- length(y)
   d <- dim(X)[2]
 
   if(is.factor(Z)){
-    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
+    q <- nlevels(as.factor(Z))-1
     lev.Z <- levels(Z)
     Z.aux <- matrix(0,n,nlevels(Z)-1)
     for(k in 1:(nlevels(Z)-1)){
@@ -696,7 +720,6 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
   }
 
   Mat.X <- as.list(rep(0,d))
-  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
 
@@ -709,15 +732,13 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
       nodos.spl <- c(min(X[,ell]), max(X[,ell]))
     }
 
-    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
     base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                         norder = (degree.spline+1),
                                         breaks = nodos.spl)
     aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
-    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-    #Centrado con la integral
+    # Centered with the integral
     spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
@@ -729,11 +750,11 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
     Xspline <- cbind(Xspline,Mat.X[[ell]])
 
   }
-  nMat <- dim(Mat.X[[1]])[2] #Decía ell
+  nMat <- dim(Mat.X[[1]])[2]
 
   sal <- stats::lm(y~Z.aux+Xspline)
   betas <- as.vector(sal$coefficients)
-  #Arreglo de NA's
+  # If NA's are present
   betas[is.na(betas)] <- rep(0,sum(is.na(betas)))
 
   beta.hat <- betas[-1]
@@ -742,11 +763,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
   alpha.hat <- betas[1]
 
   gs.hat <- matrix(0,n,d)
-  #correc <- rep(0,d)
   for(ell in 1:d){
-    #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-    #correc[ell] <- mean(aux) #Esto ya no lo necesito porque integran 0
-    #gs.hat[,ell] <- aux - mean(aux)
     gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
   }
 
@@ -754,7 +771,6 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spli
 
   if(is.null(np.point)){
     salida <- list(prediction=regresion.hat, coef.lin=coef.lin, g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj)
-      #list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
     return(salida)
   }else{
     if(is.null(dim(np.point))){
