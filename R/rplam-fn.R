@@ -679,9 +679,9 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 #' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
 #' \item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
-#' \item{y}{Vector of responses}
-#' \item{X}{Matrix of covariates that enter in the additive part of the model.}
+#' \item{y}{Vector of responses.}
 #' \item{Z}{Matrix of 'clean' covariates that enter to the linear part. Categorical variables are converted into dummies.}
+#' \item{X}{Matrix of covariates that enter in the additive part of the model.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -775,10 +775,11 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
     gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
   }
 
-  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
+  regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    salida <- list(prediction=regresion.hat, coef.lin=coef.lin, g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj)
+    salida <- list(prediction=regresion.hat, coeff.lin=coef.lin, g.matrix=gs.hat, coeff.const = alpha.hat, coeff.spl=coef.spl,
+                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, Z=Z.aux, X=X)
     return(salida)
   }else{
     if(is.null(dim(np.point))){
