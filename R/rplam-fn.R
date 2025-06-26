@@ -545,13 +545,16 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' @examples
 #' set.seed(11)
 #' n <- 100
+#' z1 <- rnorm(n)
+#' z2 <- rbinom(n, 4, 1/2)
 #' x1 <- runif(n,-1,1)
 #' x2 <- runif(n,-1,1)
 #' err <- rnorm(n, 0, 0.1)
-#' regre <- 2+x1^3+2*sin(pi*x2)
+#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
 #' y <- regre + err
+#' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- select.nknots.rob.am(y, X)
+#' sal <- plam.cl(y, Z, X)
 #'
 #' @export
 select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
@@ -778,7 +781,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
   regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    salida <- list(prediction=regresion.hat, coeff.lin=coef.lin, g.matrix=gs.hat, coeff.const = alpha.hat, coeff.spl=coef.spl,
+    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
                    nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, Z=Z.aux, X=X)
     return(salida)
   }else{
