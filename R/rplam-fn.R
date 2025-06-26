@@ -1065,16 +1065,13 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit
 #' @examples
 #' set.seed(11)
 #' n <- 100
-#' z1 <- rnorm(n)
-#' z2 <- rbinom(n, 4, 1/2)
 #' x1 <- runif(n,-1,1)
 #' x2 <- runif(n,-1,1)
 #' err <- rnorm(n, 0, 0.1)
-#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+#' regre <- 2+x1^3+2*sin(pi*x2)
 #' y <- regre + err
-#' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- plam.cl(y, Z, X)
+#' sal <- am.cl(y, X)
 #'
 #' @export
 am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
