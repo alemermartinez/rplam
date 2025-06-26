@@ -139,7 +139,7 @@ my.norm.2 <- function(x){
 #' \item{grid.nknots}{Grid of internal knots used.}
 #' \item{BIC}{Values of the BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
-#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -193,7 +193,6 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 
   for(nknots in grid.nknots){
     Mat.X <- as.list(rep(0,d))
-    #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
     Xspline <- NULL
     for (ell in 1:d){
 
@@ -273,7 +272,7 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 #' \item{grid.nknots}{Grid of internal knots used.}
 #' \item{BIC}{Values of the BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
-#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -389,7 +388,7 @@ select.nknots.cl.am <- function(y, X, degree.spline=3){
 #' \item{grid.nknots}{Grid of internal knots used.}
 #' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
-#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -536,7 +535,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' \item{grid.nknots}{Grid of internal knots used.}
 #' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
-#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -664,16 +663,25 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 #' @param y a vector of real numbers.
 #' @param Z a matrix of numbers corresponding to the covariates entering in the linear component of the model.
 #' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
-#' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X.
+#' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.
 #' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.
 #' @param degree.spline spline degree. Defaults to \code{'3'}.
 #'
 #' @return A list with the following components:
+#' \item{fitted.values}{The fitted values.}
+#' \item{g.matrix}{Fitted values of the additive part of the model. The result is a matrix of n x p, with p the number of additive components.}
+#' \item{coeff.lin}{Estimated coefficients of the linear component (no intercept included)}
+#' \item{coeff.const}{Estimation of the intercept.}
+#' \item{coeff.spl}{Estimated coefficients of the B-spline basis.}
 #' \item{nknots}{Number of internal knots selected by the procedure.}
-#' \item{grid.nknots}{Grid of internal knots used.}
-#' \item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
+#' \item{Xpline}{Matrix containing the B-spline basis for each additive function.}
+#' \item{nMat}{Dimension of the B-spline approximation.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 #' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
-#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.
+#' \item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
+#' \item{y}{Vector of responses}
+#' \item{X}{Matrix of covariates that enter in the additive part of the model.}
+#' \item{Z}{Matrix of 'clean' covariates that enter to the linear part. Categorical variables are converted into dummies.}
 #'
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
@@ -797,15 +805,13 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-      #Centrado con la integral
+      # Centered with the integral
       spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
@@ -821,13 +827,11 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 
     for(k in 1:np){
       for(ell in 1:d){
-        #aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-        #prediccion[,ell] <- aux - correc[ell] #Esto ya no lo necesito
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(prediction=regresion.hat, coef.lin=coef.lin, g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
-      #list(prediction=regresion.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const = alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y,X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
+                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, Z=Z.aux, X=X)
     return(salida)
   }
 }
