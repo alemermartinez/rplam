@@ -841,6 +841,198 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 }
 
 
+#' Robust estimator for partially linear additive models
+#'
+#' This function computes a robust estimator for partially linear additive models using the Tukey's loss function.
+#'
+#' @param y a vector of real numbers.
+#' @param Z a matrix of numbers corresponding to the covariates entering in the linear component of the model.
+#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.
+#' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.
+#' @param degree.spline spline degree. Defaults to \code{'3'}.
+#' @param maxit maximum number of iterations for computing the S- and the MM-regression estimators.
+#'
+#' @return A list with the following components:
+#' \item{fitted.values}{The fitted values.}
+#' \item{g.matrix}{Fitted values of the additive part of the model. The result is a matrix of n x p, with p the number of additive components.}
+#' \item{sigma.hat}{Estimated scale.}
+#' \item{coeff.lin}{Estimated coefficients of the linear component (no intercept included)}
+#' \item{coeff.const}{Estimation of the intercept.}
+#' \item{coeff.spl}{Estimated coefficients of the B-spline basis.}
+#' \item{nknots}{Number of internal knots selected by the procedure.}
+#' \item{Xpline}{Matrix containing the B-spline basis for each additive function.}
+#' \item{nMat}{Dimension of the B-spline approximation.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
+#' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+#' \item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
+#' \item{y}{Vector of responses.}
+#' \item{Z}{Matrix of 'clean' covariates that enter to the linear part. Categorical variables are converted into dummies.}
+#' \item{X}{Matrix of covariates that enter in the additive part of the model.}
+#'
+#' @references
+#' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+#'
+#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#'
+#' @examples
+#' set.seed(11)
+#' n <- 100
+#' z1 <- rnorm(n)
+#' z2 <- rbinom(n, 4, 1/2)
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' Z <- cbind(z1,z2)
+#' X <- cbind(x1,x2)
+#' sal <- plam.rob(y, Z, X)
+#'
+#' @export
+plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100){
+
+  n <- length(y)
+  d <- dim(X)[2]
+
+  if(is.factor(Z)){
+    q <- nlevels(as.factor(Z))-1
+    lev.Z <- levels(Z)
+    Z.aux <- matrix(0,n,nlevels(Z)-1)
+    for(k in 1:(nlevels(Z)-1)){
+      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
+    }
+  }else{
+    Z.aux <- Z
+    q <- dim(Z)[2]
+  }
+
+  if( is.null(nknots) ){
+    AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, maxit=maxit)
+    nknots <- AUX$nknots
+    nbasis <- AUX$nbasis
+    kj <- AUX$kj
+  }else{
+    nbasis <- d*(nknots + degree.spline)
+    kj <- (nknots + degree.spline)
+  }
+
+  Mat.X <- as.list(rep(0,d))
+  Xspline <- NULL
+  for (ell in 1:d){
+    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+
+    if(nknots>0){
+      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
+    }else{
+      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
+    }
+
+    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+                                             norder = (degree.spline+1),
+                                             breaks = nodos.spl)
+    aux <- fda::getbasismatrix(X[,ell], base.beta)
+    naux <- dim(aux)[2]
+
+    # Centered with the integral
+    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+    spl.final <- aux
+    for (j in 1:naux){
+      centroj=mean(spl.center[,j])
+      spl.final[,j]=aux[,j]-centroj
+    }
+    Mat.X[[ell]] <- spl.final[,-1]
+
+    Xspline <- cbind(Xspline,Mat.X[[ell]])
+
+  }
+  nMat <- dim(Mat.X[[1]])[2]
+
+  #- Tukey MM estimator -#
+  control <- robustbase::lmrob.control(trace.level = 0,
+                                       nResample   =  500,
+                                       tuning.psi = 4.685061,
+                                       subsampling = 'simple',
+                                       rel.tol     = 1e-5,
+                                       refine.tol  = 1e-5,
+                                       k.max       = 2e3,
+                                       maxit.scale = maxit,
+                                       max.it      = maxit)
+  sal  <- robustbase::lmrob(y ~ Z.aux+Xspline, control = control)
+  betas <- as.vector(sal$coefficients)
+  beta.hat <- betas[-1]
+  coef.lin <- betas[2:(q+1)]
+  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  alpha.hat <- betas[1]
+  sigma.hat <- sal$s
+
+  gs.hat <- matrix(0,n,d)
+  for(ell in 1:d){
+    gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+  }
+
+  regresion.hat <- as.vector(stats::predict(sal))
+
+  if(is.null(np.point)){
+    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
+                   coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X, Z=Z.aux)
+    return(salida)
+  }else{
+    if(is.null(dim(np.point))){
+      if(q==1){
+        prediccion <- X.new <- as.matrix(np.point)
+      }else{
+        prediccion <- X.new <- t(as.matrix(np.point))
+      }
+    }else{
+      prediccion <- X.new <- np.point
+    }
+    np <- dim(X.new)[1]
+    Mat.X.new <- as.list(rep(0,d))
+    Xspline.new <- NULL
+    for(ell in 1:d){
+
+      grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
+
+      if(nknots>0){
+        aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
+        nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
+      }else{
+        nodos.spl <- c(min(X[,ell]), max(X[,ell]))
+      }
+
+      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
+                                               norder = (degree.spline+1),
+                                               breaks = nodos.spl)
+      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
+      naux <- dim(aux)[2]
+
+      # Centered with the integral
+      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+      spl.final <- aux
+      for (j in 1:naux){
+        centroj=mean(spl.center[,j])
+        spl.final[,j]=aux[,j]-centroj
+      }
+      Mat.X.new[[ell]] <- spl.final[,-1]
+
+      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
+    }
+
+
+    for(k in 1:np){
+      for(ell in 1:d){
+        prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
+      }
+    }
+    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
+                   coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion,
+                   y=y, X=X, Z=Z.aux)
+    return(salida)
+  }
+}
+
 #' Classical Additive Model
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -992,169 +1184,6 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3)
   }
 }
 
-
-#' Robust Partial Linear Additive Model
-#' @examples
-#' x <- seq(-2, 2, length=10)
-#' @export
-plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100){
-  # y continuos response variable (n)
-  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
-  # In case it is a cathegorical variable, class of Z should be 'factor'.
-  # X a vector (n) or a matrix (n x d) for the additive part.
-  # nknots number of internal knots
-  # knots specific internal knots
-
-  n <- length(y)
-  d <- dim(X)[2]
-
-  if(is.factor(Z)){
-    q <- nlevels(as.factor(Z))-1 #Ahora son 4 las variables "discretas" porque z tiene rango 5
-    lev.Z <- levels(Z)
-    Z.aux <- matrix(0,n,nlevels(Z)-1)
-    for(k in 1:(nlevels(Z)-1)){
-      Z.aux[,k] <- as.numeric(Z == lev.Z[k+1]) #Dummies
-    }
-  }else{
-    Z.aux <- Z
-    q <- dim(Z)[2]
-  }
-
-  if( is.null(nknots) ){
-    AUX <- select.nknots.rob(y, Z, X, degree.spline=degree.spline, maxit=maxit)
-    nknots <- AUX$nknots
-    nbasis <- AUX$nbasis
-    kj <- AUX$kj
-  }else{
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
-  }
-
-  Mat.X <- as.list(rep(0,d))
-  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
-  Xspline <- NULL
-  for (ell in 1:d){
-    grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-    if(nknots>0){
-      aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-      nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-    }else{
-      nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-    }
-
-    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-    base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
-                                        norder = (degree.spline+1),
-                                        breaks = nodos.spl)
-    aux <- fda::getbasismatrix(X[,ell], base.beta)
-    naux <- dim(aux)[2]
-    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
-
-    #Centrado con la integral
-    spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
-    spl.final <- aux
-    for (j in 1:naux){
-      centroj=mean(spl.center[,j])
-      spl.final[,j]=aux[,j]-centroj
-    }
-    Mat.X[[ell]] <- spl.final[,-1]
-
-    Xspline <- cbind(Xspline,Mat.X[[ell]])
-
-  }
-  nMat <- dim(Mat.X[[1]])[2] #Decía ell
-
-  control <- robustbase::lmrob.control(trace.level = 0,         # 0
-                           nResample   =  500,      # 500 default
-                           tuning.psi = 4.685061,      # para 85% eff usar 3.443689 # para 95% eff usar 4.685061
-                           subsampling = 'simple',  #
-                           rel.tol     = 1e-5,      # 1e-7
-                           refine.tol  = 1e-5,      # 1e-7
-                           k.max       = 2e3,       # 200
-                           maxit.scale = maxit,       # 200 #2e3
-                           max.it      = maxit)       # 50 #2e3
-  sal  <- robustbase::lmrob(y ~ Z.aux+Xspline, control = control)
-  #MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
-  betas <- as.vector(sal$coefficients)
-  beta.hat <- betas[-1]
-  coef.lin <- betas[2:(q+1)]
-  coef.spl <- betas[(q+2):(1+q+nMat*d)]
-  alpha.hat <- betas[1]
-  sigma.hat <- sal$s
-
-  gs.hat <- matrix(0,n,d)
-  #correc <- rep(0,d)
-  for(ell in 1:d){
-    #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-    #correc[ell] <- mean(aux)
-    #gs.hat[,ell] <- aux - mean(aux) #Esto ya no lo necesito porque integran 0
-    gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-  }
-
-  regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
-
-  if(is.null(np.point)){
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj)
-      #list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
-    return(salida)
-  }else{
-    if(is.null(dim(np.point))){
-      if(q==1){
-        prediccion <- X.new <- as.matrix(np.point)
-      }else{
-        prediccion <- X.new <- t(as.matrix(np.point))
-      }
-    }else{
-      prediccion <- X.new <- np.point
-    }
-    np <- dim(X.new)[1]
-    Mat.X.new <- as.list(rep(0,d))
-    Xspline.new <- NULL
-    for(ell in 1:d){
-
-      grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
-
-      if(nknots>0){
-        aa <- stats::quantile(X[,ell],(1:nknots)/(nknots+1))
-        nodos.spl <- c(min(X[,ell]), aa, max(X[,ell]))
-      }else{
-        nodos.spl <- c(min(X[,ell]), max(X[,ell]))
-      }
-
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
-      base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
-                                          norder = (degree.spline+1),
-                                          breaks = nodos.spl)
-      aux <- fda::getbasismatrix(X.new[,ell], base.beta)
-      naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
-
-      #Centrado con la integral
-      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
-      spl.final <- aux
-      for (j in 1:naux){
-        centroj=mean(spl.center[,j])
-        spl.final[,j]=aux[,j]-centroj
-      }
-      Mat.X.new[[ell]] <- spl.final[,-1]
-
-      Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
-    }
-
-
-    for(k in 1:np){
-      for(ell in 1:d){
-        #aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-        #prediccion[,ell] <- aux - correc[ell] #Esto ya no lo necesito
-        prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-      }
-    }
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
-      #list(prediction=regresion.hat, sigma.hat=sigma.hat, coef.lin=coef.lin, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Z=Z.aux, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
-    return(salida)
-  }
-}
 
 
 #' Robust Additive Model
