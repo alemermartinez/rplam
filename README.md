@@ -1,7 +1,8 @@
 The following real data example of the implementation of robust
 estimators based on B-splines under partially linear additive model is
-part of a work in progress done in collaboration with Prof. Dr. Graciela
-Boente.
+part of the work Boente and Martínez (2023).
+
+Boente, G. and Martínez, A. M. (2023). A robust spline approach in partially linear additive models.  Computational Statistics and Data Analysis, 178, 107611. \url{https://doi.org/10.1016/j.csda.2022.107611}
 
 Let first install package <code>rplam</code>.
 
