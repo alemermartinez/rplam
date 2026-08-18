@@ -18,7 +18,12 @@ select.nknots.rob(y, Z, X, degree.spline = 3, maxit = 100)
 \item{maxit}{maximum number of iterations for computing the S- and the MM-regression estimators.}
 }
 \value{
-
+A list with the following components:
+\item{nknots}{Number of internal knots selected by the procedure.}
+\item{grid.nknots}{Grid of internal knots used.}
+\item{RBIC}{Values of the robust BIC criterion for each element of the grid.}
+\item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+\item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 }
 \description{
 This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the Tukey's loss function.

@@ -16,7 +16,12 @@ select.nknots.cl(y, Z, X, degree.spline = 3)
 \item{degree.spline}{spline degree. Defaults to \code{'3'}.}
 }
 \value{
-
+A list with the following components:
+\item{nknots}{Number of internal knots selected by the procedure.}
+\item{grid.nknots}{Grid of internal knots used.}
+\item{BIC}{Values of the BIC criterion for each element of the grid.}
+\item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+\item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
 }
 \description{
 This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.

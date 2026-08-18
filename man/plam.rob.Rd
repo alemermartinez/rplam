@@ -2,7 +2,7 @@
 % Please edit documentation in R/rplam-fn.R
 \name{plam.rob}
 \alias{plam.rob}
-\title{Robust Partial Linear Additive Model}
+\title{Robust estimator for partially linear additive models}
 \usage{
 plam.rob(
   y,
@@ -10,14 +10,63 @@ plam.rob(
   X,
   np.point = NULL,
   nknots = NULL,
-  knots = NULL,
   degree.spline = 3,
   maxit = 100
 )
 }
+\arguments{
+\item{y}{a vector of real numbers.}
+
+\item{Z}{a matrix of numbers corresponding to the covariates entering in the linear component of the model.}
+
+\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+
+\item{np.point}{a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.}
+
+\item{nknots}{number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.}
+
+\item{degree.spline}{spline degree. Defaults to \code{'3'}.}
+
+\item{maxit}{maximum number of iterations for computing the S- and the MM-regression estimators.}
+}
+\value{
+A list with the following components:
+\item{fitted.values}{The fitted values.}
+\item{g.matrix}{Fitted values of the additive part of the model. The result is a matrix of n x p, with p the number of additive components.}
+\item{sigma.hat}{Estimated scale.}
+\item{coeff.lin}{Estimated coefficients of the linear component (no intercept included)}
+\item{coeff.const}{Estimation of the intercept.}
+\item{coeff.spl}{Estimated coefficients of the B-spline basis.}
+\item{nknots}{Number of internal knots selected by the procedure.}
+\item{Xpline}{Matrix containing the B-spline basis for each additive function.}
+\item{nMat}{Dimension of the B-spline approximation.}
+\item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
+\item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+\item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
+\item{y}{Vector of responses.}
+\item{Z}{Matrix of 'clean' covariates that enter to the linear part. Categorical variables are converted into dummies.}
+\item{X}{Matrix of covariates that enter in the additive part of the model.}
+}
 \description{
-Robust Partial Linear Additive Model
+This function computes a robust estimator for partially linear additive models using the Tukey's loss function.
 }
 \examples{
-x <- seq(-2, 2, length=10)
+set.seed(11)
+n <- 100
+z1 <- rnorm(n)
+z2 <- rbinom(n, 4, 1/2)
+x1 <- runif(n,-1,1)
+x2 <- runif(n,-1,1)
+err <- rnorm(n, 0, 0.1)
+regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+y <- regre + err
+Z <- cbind(z1,z2)
+X <- cbind(x1,x2)
+sal <- plam.rob(y, Z, X)
+
+}
+\references{
+Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+
+\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }

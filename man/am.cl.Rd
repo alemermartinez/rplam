@@ -2,13 +2,53 @@
 % Please edit documentation in R/rplam-fn.R
 \name{am.cl}
 \alias{am.cl}
-\title{Classical Additive Model}
+\title{Classical estimator for additive models}
 \usage{
-am.cl(y, X, np.point = NULL, nknots = NULL, knots = NULL, degree.spline = 3)
+am.cl(y, X, np.point = NULL, nknots = NULL, degree.spline = 3)
+}
+\arguments{
+\item{y}{a vector of real numbers.}
+
+\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+
+\item{np.point}{a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.}
+
+\item{nknots}{number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.}
+
+\item{degree.spline}{spline degree. Defaults to \code{'3'}.}
+}
+\value{
+A list with the following components:
+\item{fitted.values}{The fitted values.}
+\item{g.matrix}{Fitted values of the additive part of the model. The result is a matrix of n x p, with p the number of additive components.}
+\item{coeff.const}{Estimation of the intercept.}
+\item{coeff.spl}{Estimated coefficients of the B-spline basis.}
+\item{nknots}{Number of internal knots selected by the procedure.}
+\item{Xpline}{Matrix containing the B-spline basis for each additive function.}
+\item{nMat}{Dimension of the B-spline approximation.}
+\item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
+\item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+\item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
+\item{y}{Vector of responses.}
+\item{X}{Matrix of covariates that enter in the additive part of the model.}
 }
 \description{
-Classical Additive Model
+This function computes the least-squares based estimator for additive models based on B-splines.
 }
 \examples{
-x <- seq(-2, 2, length=10)
+set.seed(11)
+n <- 100
+x1 <- runif(n,-1,1)
+x2 <- runif(n,-1,1)
+err <- rnorm(n, 0, 0.1)
+regre <- 2+x1^3+2*sin(pi*x2)
+y <- regre + err
+X <- cbind(x1,x2)
+sal <- am.cl(y, X)
+
+}
+\references{
+Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+
+\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }
