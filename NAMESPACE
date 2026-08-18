@@ -13,11 +13,17 @@ export(select.nknots.cl.am)
 export(select.nknots.rob)
 export(select.nknots.rob.am)
 export(tukey.loss)
-importFrom(fda,create.bspline.basis)
-importFrom(fda,getbasismatrix)
-importFrom(robustbase,lmrob)
-importFrom(robustbase,lmrob.control)
+importFrom(fda,
+  create.bspline.basis,
+  getbasismatrix
+)
+importFrom(robustbase,
+  lmrob,
+  lmrob.control
+)
 importFrom(splines,bs)
-importFrom(stats,lm)
-importFrom(stats,median)
+importFrom(stats,
+  lm,
+  median
+)
 useDynLib(rplam, .registration = TRUE)
