@@ -8,8 +8,9 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: GPL-3 + file LICENSE
 Imports: fda, stats, robustbase
-Suggests: knitr, rmarkdown
-VignetteBuilder: knitr
+Suggests: 
+    knitr,
+    rmarkdown
 Encoding: UTF-8
 LazyData: true
 Config/roxygen2/version: 8.1.0
