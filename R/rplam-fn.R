@@ -40,7 +40,7 @@ psi.tukey <- function(r, k=4.685){
 #'
 #' @return A vector of the same length as x which corresponds to the derivatives of the Tukey's loss function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -63,7 +63,7 @@ psi.tukey.derivative <- function(x, k = 4.685){
 #'
 #' @return A vector of the same length as x which corresponds to values obtained by the Tukey's loss function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -91,7 +91,7 @@ tukey.loss <- function(x, k = 4.685){
 #'
 #' @return A vector of the same length as r which corresponds to the Tukey's weight function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' r <- seq(-2, 2, length=10)
@@ -113,7 +113,7 @@ psi.w <- function(r, k= 4.685){
 #'
 #' @return The Euclidean norm of the input vector.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -125,7 +125,7 @@ my.norm.2 <- function(x){
 }
 
 
-#' Selection of the number of knots for the least-squares estimator under a PLAM
+#' Selection of the number of internal knots for the least-squares estimator under a PLAM
 #'
 #' This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
 #'
@@ -144,7 +144,7 @@ my.norm.2 <- function(x){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -170,8 +170,8 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
     cat("Assumption 1<=r not fulfilled")
   }
 
-  #Corregir para que solo tire un warning
   if(is.factor(Z)){
+    warning("Linear covariate Z is a factor and has been converted into dummy variables")
     q <- nlevels(as.factor(Z))-1
     lev.Z <- levels(Z)
     Z.aux <- matrix(0,n,nlevels(Z)-1)
@@ -259,7 +259,7 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 }
 
 
-#' Selection of the number of knots for the least-squares estimator for additive models
+#' Selection of the number of internal knots for the least-squares estimator for additive models
 #'
 #' This function automatically selects the number of internal knots for the B-spline approximation. It uses the BIC criterion with the quadratic function.
 #'
@@ -277,7 +277,7 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -393,7 +393,7 @@ select.nknots.cl.am <- function(y, X, degree.spline=3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -420,6 +420,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
   d <- dim(X)[2]
 
   if(is.factor(Z)){
+    warning("Linear covariate Z is a factor and has been converted into dummy variables")
     q <- nlevels(as.factor(Z))-1
     lev.Z <- levels(Z)
     Z.aux <- matrix(0,n,nlevels(Z)-1)
@@ -540,7 +541,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -638,7 +639,7 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
       nbasis <- d*(nknots + degree.spline)
       desvio.hat <- sal.r$s
       tuk <- tukey.loss( (y - regresion.hat.r)/desvio.hat )
-      RBIC[nknots-lim.inf.nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 porque q de la parte lineal y 1 de la constante. O sea, q+1 es la cantidad de lineales.
+      RBIC[nknots-lim.inf.nknots+1] <- log( (desvio.hat^2)*sum(tuk) )+ (log(n)/(2*n))*(nbasis+q+1) #q+1 because q is for the linear part and 1 for the constant.
     }else{
       RBIC[nknots-lim.inf.nknots+1] <- NA
     }
@@ -686,7 +687,7 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -873,7 +874,7 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -1060,7 +1061,7 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' \author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 #'
 #' @examples
 #' set.seed(11)
@@ -1194,21 +1195,52 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
 
 
 
-#' Robust Additive Model
+#' Robust estimator for additive models
+#'
+#' This function computes a robust estimator for additive models based on B-splines.
+#'
+#' @param y a vector of real numbers.
+#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.
+#' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.rob}.
+#' @param degree.spline spline degree. Defaults to \code{'3'}.
+#' @param maxit maximum number of iterations for computing the S- and the MM-regression estimators.
+#'
+#' @return A list with the following components:
+#' \item{fitted.values}{The fitted values.}
+#' \item{g.matrix}{Fitted values of the additive part of the model. The result is a matrix of n x p, with p the number of additive components.}
+#' \item{coeff.const}{Estimation of the intercept.}
+#' \item{coeff.spl}{Estimated coefficients of the B-spline basis.}
+#' \item{nknots}{Number of internal knots selected by the procedure.}
+#' \item{Xpline}{Matrix containing the B-spline basis for each additive function.}
+#' \item{nMat}{Dimension of the B-spline approximation.}
+#' \item{nbasis}{Total number of elements of the basis of B-splines. This corresponds to \code{d* kj} where \code{d} is the number of covariates entering in the additive part.}
+#' \item{kj}{Number of elements of the B-spline basis used to approximate each additive function. It is calculated as \code{nknots + degree.spline}.}
+#' \item{np.prediction}{Vector containing the predicted values obtained for \code{np.point}.}
+#' \item{y}{Vector of responses.}
+#' \item{X}{Matrix of covariates that enter in the additive part of the model.}
+#'
+#' @references
+#' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
+#'
+#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#'
 #' @examples
-#' x <- seq(-2, 2, length=10)
+#' set.seed(11)
+#' n <- 100
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' X <- cbind(x1,x2)
+#' sal <- am.rob(y, X)
+#'
 #' @export
-am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3, maxit=100){
-  # y continuos response variable (n)
-  # Z a discret or cathegorical vector (n) or matrix (n x q) for the linear part.
-  # In case it is a cathegorical variable, class of Z should be 'factor'.
-  # X a vector (n) or a matrix (n x d) for the additive part.
-  # nknots number of internal knots
-  # knots specific internal knots
+am.rob <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100){
 
   n <- length(y)
   d <- dim(X)[2]
-  q <- 0
 
   if( is.null(nknots) ){
     AUX <- select.nknots.rob.am(y, X, degree.spline=degree.spline, maxit=maxit)
@@ -1216,12 +1248,11 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
     nbasis <- AUX$nbasis
     kj <- AUX$kj
   }else{
-    nbasis <- d*(nknots + degree.spline) #d*(nknots + degree.spline+1)
-    kj <- (nknots + degree.spline) #(nknots + degree.spline + 1)
+    nbasis <- d*(nknots + degree.spline)
+    kj <- (nknots + degree.spline)
   }
 
   Mat.X <- as.list(rep(0,d))
-  #nMat.X <- rep(0,d) #Esto lo tengo si los grados son distintos. Por ahora D=3
   Xspline <- NULL
   for (ell in 1:d){
     grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
@@ -1233,15 +1264,13 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
       nodos.spl <- c(min(X[,ell]), max(X[,ell]))
     }
 
-    #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
     base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                              norder = (degree.spline+1),
                                              breaks = nodos.spl)
     aux <- fda::getbasismatrix(X[,ell], base.beta)
     naux <- dim(aux)[2]
-    #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-    #Centrado con la integral
+    # Centered with the integral
     spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
     spl.final <- aux
     for (j in 1:naux){
@@ -1252,7 +1281,7 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
 
     Xspline <- cbind(Xspline,Mat.X[[ell]])
   }
-  nMat <- dim(Mat.X[[1]])[2] #Decía ell
+  nMat <- dim(Mat.X[[1]])[2]
 
   control <- robustbase::lmrob.control(trace.level = 0,         # 0
                            nResample   =  500,      # 500 default
@@ -1264,25 +1293,18 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
                            maxit.scale = maxit,       # 200 #2e3
                            max.it      = maxit)       # 50 #2e3
   sal  <- robustbase::lmrob(y ~ Xspline, control = control)
-  #MASS::rlm(y~Z.aux+Xspline ,method=method,maxit=maxit)
   betas <- as.vector(sal$coefficients)
+
   beta.hat <- betas[-1]
-  #coef.lin <- betas[2:(q+1)]
-  coef.spl <- betas[(q+2):(1+q+nMat*d)]
+  coef.spl <- betas[2:(1+nMat*d)]
   alpha.hat <- betas[1]
   sigma.hat <- sal$s
 
   gs.hat <- matrix(0,n,d)
-  #correc <- rep(0,d)
   for(ell in 1:d){
     if(length((nMat*(ell-1)+1):(nMat*ell))!=1){
-      #aux <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-      #correc[ell] <- mean(aux)
-      #gs.hat[,ell] <- aux - mean(aux) #Esto ya no lo necesito porque integran 0
       gs.hat[,ell] <- as.vector( Xspline[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
     }else{
-      #aux <- Xspline[,(nMat*(ell-1)+1):(nMat*ell)] * coef.spl[(nMat*(ell-1)+1):(nMat*ell)]
-      #correc[ell] <- mean(aux)
       gs.hat[,ell] <- Xspline[,(nMat*(ell-1)+1):(nMat*ell)] * coef.spl[(nMat*(ell-1)+1):(nMat*ell)]
     }
   }
@@ -1290,16 +1312,11 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
   if(is.null(np.point)){
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj)
-      #list(prediction=regresion.hat, sigma.hat=sigma.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj)
+    salida <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj,  y=y, X=X)
     return(salida)
   }else{
     if(is.null(dim(np.point))){
-      if(q==1){
-        prediccion <- X.new <- as.matrix(np.point)
-      }else{
-        prediccion <- X.new <- t(as.matrix(np.point))
-      }
+      prediccion <- X.new <- t(as.matrix(np.point))
     }else{
       prediccion <- X.new <- np.point
     }
@@ -1307,6 +1324,7 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
     Mat.X.new <- as.list(rep(0,d))
     Xspline.new <- NULL
     for(ell in 1:d){
+
       grilla.tes <- seq(min(X[,ell]),max(X[,ell]),length=n)
 
       if(nknots>0){
@@ -1316,16 +1334,14 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
         nodos.spl <- c(min(X[,ell]), max(X[,ell]))
       }
 
-      #Mat.X[[ell]] <- splines::bs( X[,ell], knots=knots, degree=degree.spline, intercept=FALSE)
       base.beta   <- fda::create.bspline.basis(rangeval = c(min(X[,ell]), max(X[,ell])),
                                           norder = (degree.spline+1),
                                           breaks = nodos.spl)
       aux <- fda::getbasismatrix(X.new[,ell], base.beta)
       naux <- dim(aux)[2]
-      #Mat.X[[ell]] <- aux-t(matrix(colMeans(aux),naux,n))
 
-      #Centrado con la integral
-      spl.center   <- fda::getbasismatrix(grilla.tes, base.beta)
+      # Centered with the integral
+      spl.center <- fda::getbasismatrix(grilla.tes, base.beta)
       spl.final <- aux
       for (j in 1:naux){
         centroj=mean(spl.center[,j])
@@ -1334,24 +1350,19 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, knots=NULL, degree.spline=3
       Mat.X.new[[ell]] <- spl.final[,-1]
 
       Xspline.new <- cbind(Xspline.new,Mat.X.new[[ell]])
-
     }
-
 
     for(k in 1:np){
       for(ell in 1:d){
-        #aux <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
-        #prediccion[,ell] <- aux - correc[ell] #Ya no lo necesito porque integran 0
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(prediction=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
-      #list(prediction=regresion.hat, sigma.hat=sigma.hat, alpha=alpha.hat+sum(correc), g.matrix=gs.hat, coef.const=alpha.hat, coef.spl=coef.spl, nknots=nknots, knots=knots, y=y, X=X, Xspline=Xspline, nMat=nMat,alpha.clean=alpha.hat, nbasis=nbasis, kj=kj, np.prediction=prediccion)
+    salida <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, X=X )
     return(salida)
   }
 }
 
-
+# Location M-estimator
 pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
   yp <- y[ tmp<-!is.na(y) ]
   if(is.null(ini)){

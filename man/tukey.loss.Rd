@@ -23,5 +23,5 @@ tukey.loss(x)
 
 }
 \author{
-Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}, Alejandra Martinez
+Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
 }

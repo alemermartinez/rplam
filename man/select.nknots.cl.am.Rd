@@ -2,7 +2,7 @@
 % Please edit documentation in R/rplam-fn.R
 \name{select.nknots.cl.am}
 \alias{select.nknots.cl.am}
-\title{Selection of the number of knots for the least-squares estimator for additive models}
+\title{Selection of the number of internal knots for the least-squares estimator for additive models}
 \usage{
 select.nknots.cl.am(y, X, degree.spline = 3)
 }
@@ -38,6 +38,7 @@ sal <- select.nknots.cl.am(y, X)
 }
 \references{
 Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
-
-\author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+}
+\author{
+Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
 }
