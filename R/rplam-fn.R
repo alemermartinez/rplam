@@ -656,14 +656,42 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
   return(salida)
 }
 
+# Extract variables from 'formula'
+get_y_Z_X <- function(formula) {
+
+  y <- eval(formula[[2]], envir = environment(formula))
+
+  rhs <- as.list(formula[[3]])
+  terms <- rhs[-1]
+
+  a_terms <- vapply(
+    terms,
+    function(x) is.call(x) && identical(x[[1]], quote(a)),
+    logical(1)
+  )
+
+  X_expr <- terms[a_terms][[1]][[2]]
+  Z_expr <- terms[!a_terms][[1]]
+
+  X <- eval(X_expr, envir = environment(formula))
+  Z <- eval(Z_expr, envir = environment(formula))
+
+  list(y = y, Z = Z, X = X)
+}
+
 
 #' Classical estimator for partially linear additive models
 #'
 #' This function computes the least-squares based estimator for partially linear additive models.
 #'
-#' @param y a vector of real numbers.
-#' @param Z a matrix of numbers corresponding to the covariates entering in the linear component of the model.
-#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param formula an object of class \code{formula}: a symbolic description
+#' of the model to be fitted. For instance, if \code{y} is the response
+#' vector, \code{Z} is a matrix of numbers corresponding to the covariates
+#' entering the linear component of the model, and \code{X} is a matrix of
+#' numbers corresponding to the covariates entering the additive component
+#' of the model, the formula is \code{y ~ Z + a(X)}, where \code{a()} is used
+#' only as a notation to identify the covariates entering the additive
+#' component and does not need to be defined as a function.
 #' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.
 #' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.
 #' @param degree.spline spline degree. Defaults to \code{'3'}.
@@ -701,10 +729,16 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 #' y <- regre + err
 #' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- plam.cl(y, Z, X)
+#' sal <- plam.cl(y ~ Z + a(X))
 #'
 #' @export
-plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
+plam.cl <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3){
+
+  aux <- get_y_Z_X(formula)
+  y <- aux$y
+  Z <- aux$Z
+  X <- aux$X
+
 
   n <- length(y)
   d <- dim(X)[2]
@@ -782,9 +816,10 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
   regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
                    nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, Z=Z.aux, X=X)
-    return(salida)
+    class(object) <- c("plam.cl", "plam", "list")
+    return(object)
   }else{
     if(is.null(dim(np.point))){
       if(q==1){
@@ -835,9 +870,10 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
                    nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, Z=Z.aux, X=X)
-    return(salida)
+    class(object) <- c("plam.cl", "plam", "list")
+    return(object)
   }
 }
 
@@ -846,9 +882,14 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 #'
 #' This function computes a robust estimator for partially linear additive models using the Tukey's loss function.
 #'
-#' @param y a vector of real numbers.
-#' @param Z a matrix of numbers corresponding to the covariates entering in the linear component of the model.
-#' @param X a matrix of numbers corresponding to the covariates entering in the additive component of the model.
+#' @param formula an object of class \code{formula}: a symbolic description
+#' of the model to be fitted. For instance, if \code{y} is the response
+#' vector, \code{Z} is a matrix of numbers corresponding to the covariates
+#' entering the linear component of the model, and \code{X} is a matrix of
+#' numbers corresponding to the covariates entering the additive component
+#' of the model, the formula is \code{y ~ Z + a(X)}, where \code{a()} is used
+#' only as a notation to identify the covariates entering the additive
+#' component and does not need to be defined as a function.
 #' @param np.point a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.
 #' @param nknots number of internal knots used in the estimation procedure. Defaults to \code{'NULL'} implies using the BIC criterion of function \code{select.nknots.cl}.
 #' @param degree.spline spline degree. Defaults to \code{'3'}.
@@ -888,10 +929,15 @@ plam.cl <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3){
 #' y <- regre + err
 #' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
-#' sal <- plam.rob(y, Z, X)
+#' sal <- plam.rob(y ~ Z + a(X))
 #'
 #' @export
-plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100){
+plam.rob <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100){
+
+  aux <- get_y_Z_X(formula)
+  y <- aux$y
+  Z <- aux$Z
+  X <- aux$X
 
   n <- length(y)
   d <- dim(X)[2]
@@ -976,9 +1022,10 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit
   regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
                    coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X, Z=Z.aux)
-    return(salida)
+    class(object) <- c("plam.rob", "plam", "list")
+    return(object)
   }else{
     if(is.null(dim(np.point))){
       if(q==1){
@@ -1027,10 +1074,11 @@ plam.rob <- function(y, Z, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
                    coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion,
                    y=y, X=X, Z=Z.aux)
-    return(salida)
+    class(object) <- c("plam.rob", "plam", "list")
+    return(object)
   }
 }
 
@@ -1142,9 +1190,10 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
   regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coef.const = alpha.hat, coeff.spl=coef.spl,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coef.const = alpha.hat, coeff.spl=coef.spl,
                    nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X)
-    return(salida)
+    class(object) <- c("am.cl", "am", "list")
+    return(object)
   }else{
     if(is.null(dim(np.point))){
       prediccion <- X.new <- t(as.matrix(np.point))
@@ -1187,9 +1236,10 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.const = alpha.hat, coeff.spl=coef.spl, nknots=nknots,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.const = alpha.hat, coeff.spl=coef.spl, nknots=nknots,
                    Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, X=X)
-    return(salida)
+    class(object) <- c("am.cl", "am", "list")
+    return(object)
   }
 }
 
@@ -1312,8 +1362,9 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100)
   regresion.hat <- as.vector(stats::predict(sal)) #alpha.hat + dummies%*%coef.lin + Xspline%*%coef.spl
 
   if(is.null(np.point)){
-    salida <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj,  y=y, X=X)
-    return(salida)
+    object <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj,  y=y, X=X)
+    class(object) <- c("am.rob", "am", "list")
+    return(object)
   }else{
     if(is.null(dim(np.point))){
       prediccion <- X.new <- t(as.matrix(np.point))
@@ -1357,8 +1408,9 @@ am.rob <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3, maxit=100)
         prediccion[,ell] <- as.vector( Xspline.new[,(nMat*(ell-1)+1):(nMat*ell)] %*% coef.spl[(nMat*(ell-1)+1):(nMat*ell)] )
       }
     }
-    salida <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, X=X )
-    return(salida)
+    object <- list(fitted.values=regresion.hat, sigma.hat=sigma.hat, g.matrix=gs.hat, coeff.const=alpha.hat, coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, X=X )
+    class(object) <- c("am.rob", "am", "list")
+    return(object)
   }
 }
 
@@ -1384,3 +1436,45 @@ pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
   }
   return(beta)
 }
+
+
+#- S3 Methods -#
+
+#' Residuals for objects of class \code{plam}
+#'
+#' This function returns the residuals of the fitted partly linear additive model using the classical
+#' or robust estimators, as computed with \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#'
+#' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of residuals.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+residuals.plam <- function(object, ...){
+  return( object$y - object$fitted.values )
+}
+
+
+#' Residuals for objects of class \code{am}
+#'
+#' This function returns the residuals of the fitted additive model using the classical
+#' or robust estimators, as computed with \code{\link{am.cl}} or \code{\link{am.rob}}.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of residuals.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+residuals.am <- function(object, ...){
+  return( object$y - object$fitted.values )
+}
+
+
+
+

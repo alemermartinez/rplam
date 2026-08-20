@@ -5,9 +5,7 @@
 \title{Robust estimator for partially linear additive models}
 \usage{
 plam.rob(
-  y,
-  Z,
-  X,
+  formula,
   np.point = NULL,
   nknots = NULL,
   degree.spline = 3,
@@ -15,11 +13,14 @@ plam.rob(
 )
 }
 \arguments{
-\item{y}{a vector of real numbers.}
-
-\item{Z}{a matrix of numbers corresponding to the covariates entering in the linear component of the model.}
-
-\item{X}{a matrix of numbers corresponding to the covariates entering in the additive component of the model.}
+\item{formula}{an object of class \code{formula}: a symbolic description
+of the model to be fitted. For instance, if \code{y} is the response
+vector, \code{Z} is a matrix of numbers corresponding to the covariates
+entering the linear component of the model, and \code{X} is a matrix of
+numbers corresponding to the covariates entering the additive component
+of the model, the formula is \code{y ~ Z + a(X)}, where \code{a()} is used
+only as a notation to identify the covariates entering the additive
+component and does not need to be defined as a function.}
 
 \item{np.point}{a matrix for computing the prediction values for the nonparametric part. Must have the same number of columns as X. Defaults to \code{'NULL'}.}
 
@@ -62,7 +63,7 @@ regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
 y <- regre + err
 Z <- cbind(z1,z2)
 X <- cbind(x1,x2)
-sal <- plam.rob(y, Z, X)
+sal <- plam.rob(y ~ Z + a(X))
 
 }
 \references{
