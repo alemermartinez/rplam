@@ -1,8 +1,7 @@
 The following real data example of the implementation of robust
 estimators based on B-splines under partially linear additive model is
-part of the work Boente and Martínez (2023).
-
-Boente, G. and Martínez, A. M. (2023). A robust spline approach in partially linear additive models.  Computational Statistics and Data Analysis, 178, 107611. \url{https://doi.org/10.1016/j.csda.2022.107611}
+part of a work in progress done in collaboration with Prof. Dr. Graciela
+Boente.
 
 Let first install package <code>rplam</code>.
 
@@ -100,10 +99,10 @@ identify potential outliers, we use the boxplot of the residuals
 obtained by the robust fit.
 
 ``` r
-res.rob <- y-fit.rob$prediction
+res.rob <- y-fit.rob$fitted.values
 DF3 <- as.data.frame(list(
   1:n,
-  y-fit.rob$prediction
+  y-fit.rob$fitted.values
 ))
 names(DF3) <- c("Position","Residuals")
 ggplot(DF3,aes(y=Residuals))+

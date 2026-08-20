@@ -54,8 +54,8 @@ fit.rob$kj
 ```
 The estimations obtained for each linear coefficient for both classical and robust approaches are shown it the following Table.
 ```{r echo=FALSE, results='asis'}
-col2 <- round(c(fit.full.cl$coef.const,fit.full.cl$coef.lin),4)
-col3 <- round(c(fit.rob$coef.const,fit.rob$coef.lin),4)
+col2 <- round(c(fit.full.cl$coeff.const,fit.full.cl$coeff.lin),4)
+col3 <- round(c(fit.rob$coeff.const,fit.rob$coeff.lin),4)
 tabla.b1 <- cbind(col2,col3)
 row.names(tabla.b1) <- c('$\\beta_0$', "$\\beta_1$")
 colnames(tabla.b1) <- c("Classical","Robust")
@@ -68,9 +68,9 @@ The following three plots correspond to the classical (in red and dashed line) a
 n <- length(y)
 DF2 <- as.data.frame(list(
   rbind(X,X),
-  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1])),
-  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2])),
-  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-1])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-2])),
+  c(rep(NA,n),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-3])),
   rbind(fit.full.cl$g.matrix,fit.rob$g.matrix),
   c(rep("Classical",n),rep("Robust",n))
 ))
@@ -112,10 +112,10 @@ ggplot(DF2,aes(x=x3,y=re.x3,color=Fit)) +
 
 Even though the shape of the estimates corresponding to the second additive component is similar for both estimators, differences are observed in the estimation of the first and third additive component. To identify potential outliers, we use the boxplot of the residuals obtained by the robust fit.
 ```{r residuals1}
-res.rob <- y-fit.rob$prediction
+res.rob <- y-fit.rob$fitted.values
 DF3 <- as.data.frame(list(
   1:n,
-  y-fit.rob$prediction
+  y-fit.rob$fitted.values
 ))
 names(DF3) <- c("Position","Residuals")
 ggplot(DF3,aes(y=Residuals))+
@@ -147,7 +147,7 @@ fit.del.cl$kj
 
 New estimated linear coefficients with the previous ones are shown in the following table.
 ```{r echo=FALSE, results='asis'}
-col4 <- round(c(fit.del.cl$coef.const,fit.del.cl$coef.lin),4)
+col4 <- round(c(fit.del.cl$coeff.const,fit.del.cl$coeff.lin),4)
 tabla.b1.aux <- cbind(tabla.b1,col4)
 row.names(tabla.b1.aux) <- c('$\\beta_0$', "$\\beta_1$")
 colnames(tabla.b1.aux) <- c("Classical","Robust","Classical on clean data")
@@ -159,17 +159,17 @@ The following plots correspond to the new curves obtained with the classical fit
 ```{r ggplot-final, echo=FALSE,warning=FALSE}
 DF3point <- as.data.frame(list(
   X[outliers,],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1]))[outliers,],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2]))[outliers,],
-  (fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3]))[outliers,]
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-1]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-2]))[outliers,],
+  (fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-3]))[outliers,]
 )
 )
 names(DF3point) <- c("x1.x","x2.x","x3.x","re.x1","re.x2","re.x3")
 DF4 <- as.data.frame(list(
   rbind(X.del,X),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-1])),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-2]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-2])),
-  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coef.lin - fit.del.cl$coef.const - rowSums(fit.del.cl$g.matrix[,-3]),fit.rob$y  - fit.rob$Z%*%fit.rob$coef.lin - fit.rob$coef.const - rowSums(fit.rob$g.matrix[,-3])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coeff.lin - fit.del.cl$coeff.const - rowSums(fit.del.cl$g.matrix[,-1]),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-1])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coeff.lin - fit.del.cl$coeff.const - rowSums(fit.del.cl$g.matrix[,-2]),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-2])),
+  c(fit.del.cl$y  - fit.del.cl$Z%*%fit.del.cl$coeff.lin - fit.del.cl$coeff.const - rowSums(fit.del.cl$g.matrix[,-3]),fit.rob$y  - fit.rob$Z%*%fit.rob$coeff.lin - fit.rob$coeff.const - rowSums(fit.rob$g.matrix[,-3])),
   rbind(fit.del.cl$g.matrix,fit.rob$g.matrix),
   c(rep("Classical",n-length(outliers)),rep("Robust",n))
 ))
