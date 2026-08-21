@@ -1476,5 +1476,36 @@ residuals.am <- function(object, ...){
 }
 
 
+#' Fitted values for objects of class \code{plam}
+#'
+#' This function returns the fitted values given the covariates of the original sample under a partially linear additive model using a classical or robust estimator computed with \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#'
+#' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of fitted values.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+predict.plam <- function(object, ...){
+  return( object$fitted.values )
+}
 
+
+#' Fitted values for objects of class \code{am}
+#'
+#' This function returns the fitted values given the covariates of the original sample under an additive model using a classical or robust estimator computed with \code{\link{am.cl}} or \code{\link{am.rob}}.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of fitted values.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+predict.am <- function(object, ...){
+  return( object$fitted.values )
+}
 
