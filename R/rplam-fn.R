@@ -1190,7 +1190,7 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
   regresion.hat <- as.vector(stats::predict(sal))
 
   if(is.null(np.point)){
-    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coef.const = alpha.hat, coeff.spl=coef.spl,
+    object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.const = alpha.hat, coeff.spl=coef.spl,
                    nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X)
     class(object) <- c("am.cl", "am", "list")
     return(object)
@@ -1507,5 +1507,165 @@ predict.plam <- function(object, ...){
 #' @export
 predict.am <- function(object, ...){
   return( object$fitted.values )
+}
+
+
+
+#' Fitted values for objects of class \code{plam}
+#'
+#' This function returns the fitted values given the covariates of the original sample under a partially linear additive model using a classical or robust estimator computed with \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#'
+#' @param object an object of class \code{plam}, a result of a call to \code{plam.cl} or \code{plam.rob}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of fitted values.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+fitted.values.plam <- function(object,...){
+  UseMethod("fitted")
+}
+
+#' @export
+fitted.plam <- function(object,...){
+  return( object$fitted.values )
+}
+
+
+#' Fitted values for objects of class \code{am}
+#'
+#' This function returns the fitted values given the covariates of the original sample under an additive model using a classical or robust estimator computed with \code{\link{am.cl}} or \code{\link{am.rob}}.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{am.cl} or \code{am.rob}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A vector of fitted values.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+fitted.values.am <- function(object,...){
+  UseMethod("fitted")
+}
+
+#' @export
+fitted.am <- function(object,...){
+  return( object$fitted.values )
+}
+
+
+#' Diagnostic plots for objects of class \code{plam}
+#'
+#' Plot method for class \code{plam}.
+#'
+#' @param x an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param which vector of indices of explanatory variables for which partial residuals plots will be generated. Defaults to all available explanatory variables.
+#' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
+#' @param ... additional other arguments.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @examples
+#' set.seed(11)
+#' n <- 100
+#' z1 <- rnorm(n)
+#' z2 <- rbinom(n, 4, 1/2)
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+3*z1-4*z2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' Z <- cbind(z1,z2)
+#' X <- cbind(x1,x2)
+#' fit.rob <- plam.rob(y ~ Z + a(X))
+#' plot(fit.rob, which=1)
+#'
+#' @importFrom graphics lines par
+#' @export
+plot.plam <- function(x, which=1:p, ask=FALSE,...){
+  object <- x
+  X <- object$X
+  p <- dim(X)[2]
+  opar <- par(ask=ask)
+  on.exit(par(opar))
+  these <- rep(FALSE, p)
+  these[ which ] <- TRUE
+  for(i in 1:p) {
+    if(these[i]) {
+      ord <- order(X[,i])
+      if (is.null(colnames(X)) ){
+        x_name <- bquote(paste('x')[.(i)])
+      } else {
+        x_name <- colnames(X)[i]
+      }
+      y_name <- bquote(paste(hat('g')[.(i)]))
+      if(p==2){
+        res <- object$y - as.numeric(object$g.matrix[,-i, drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
+      }else{
+        res <- object$y - rowSums(object$g.matrix[,-i, drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
+      }
+
+      lim_cl <- c(min(res), max(res))
+      plot(X[,i], res, pch=20,col='gray45',main="",xlab=x_name,ylab=y_name, ylim=lim_cl,cex.lab=0.8)
+      lines(X[ord,i],object$g.matrix[ord,i],lwd=3)
+    }
+  }
+}
+
+
+#' Diagnostic plots for objects of class \code{am}
+#'
+#' Plot method for class \code{am}.
+#'
+#' @param x an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
+#' @param which vector of indices of explanatory variables for which partial residuals plots will be generated. Defaults to all available explanatory variables.
+#' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
+#' @param ... additional other arguments.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @examples
+#' set.seed(11)
+#' n <- 100
+#' x1 <- runif(n,-1,1)
+#' x2 <- runif(n,-1,1)
+#' err <- rnorm(n, 0, 0.1)
+#' regre <- 2+x1^3+2*sin(pi*x2)
+#' y <- regre + err
+#' X <- cbind(x1,x2)
+#' fit.rob <- am.rob(y, X)
+#' plot(fit.rob)
+#'
+#' @importFrom graphics lines par
+#' @export
+plot.am <- function(x, which=1:p, ask=FALSE,...){
+  object <- x
+  X <- object$X
+  p <- dim(X)[2]
+  opar <- par(ask=ask)
+  on.exit(par(opar))
+  these <- rep(FALSE, p)
+  these[ which ] <- TRUE
+  for(i in 1:p) {
+    if(these[i]) {
+      ord <- order(X[,i])
+      if (is.null(colnames(X)) ){
+        x_name <- bquote(paste('x')[.(i)])
+      } else {
+        x_name <- colnames(X)[i]
+      }
+      y_name <- bquote(paste(hat('g')[.(i)]))
+
+      if(p==2){
+        res <- object$y - as.numeric(object$g.matrix[,-i, drop=FALSE]) - object$coeff.const
+      }else{
+        res <- object$y - rowSums(object$g.matrix[,-i, drop=FALSE]) - object$coeff.const
+      }
+      lim_cl <- c(min(res), max(res))
+      plot(X[,i], res, pch=20,col='gray45',main="",xlab=x_name,ylab=y_name, ylim=lim_cl,cex.lab=0.8)
+      lines(X[ord,i],object$g.matrix[ord,i],lwd=3)
+    }
+  }
 }
 
