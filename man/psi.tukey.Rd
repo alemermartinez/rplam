@@ -26,5 +26,5 @@ psi.tukey(r=x, k = 1.5)
 
 }
 \author{
-Matias Salibian-Barrera, \email{matias@stat.ubc.ca}, Alejandra Martinez
+Matias Salibian-Barrera, \email{matias@stat.ubc.ca}, Alejandra Martínez
 }

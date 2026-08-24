@@ -21,5 +21,5 @@ my.norm.2(x)
 
 }
 \author{
-Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez, \email{ale_m_martinez@hotmail.com}
 }

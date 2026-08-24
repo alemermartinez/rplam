@@ -18,5 +18,5 @@ A model formula.
 Description of the partially linear additive model formula extracted from an object of class \code{plam}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }

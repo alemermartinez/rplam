@@ -18,5 +18,5 @@ A real number.
 The default print method for a \code{plam} object.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }

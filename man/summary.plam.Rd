@@ -20,5 +20,5 @@ Summary method for class \code{plam}.
 This function returns the estimation of the intercept, the linear regression coefficients and also the five-number summary and the mean of the residuals for both classical and robust estimators. For the robust estimator it also returns the estimate of the residual standard error.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }

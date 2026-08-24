@@ -19,5 +19,5 @@ This function returns the deviance of the fitted additive model as computed with
 \code{\link{am.rob}}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }

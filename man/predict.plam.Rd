@@ -18,5 +18,5 @@ A vector of fitted values.
 This function returns the fitted values given the covariates of the original sample under a partially linear additive model using a classical or robust estimator computed with \code{\link{plam.cl}} or \code{\link{plam.rob}}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }

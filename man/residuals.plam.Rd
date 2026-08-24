@@ -19,5 +19,5 @@ This function returns the residuals of the fitted partly linear additive model u
 or robust estimators, as computed with \code{\link{plam.cl}} or \code{\link{plam.rob}}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 }
