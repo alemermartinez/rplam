@@ -18,5 +18,5 @@ A vector of fitted values.
 This function returns the fitted values given the covariates of the original sample under an additive model using a classical or robust estimator computed with \code{\link{am.cl}} or \code{\link{am.rob}}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 }

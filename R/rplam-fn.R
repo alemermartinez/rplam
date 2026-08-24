@@ -40,7 +40,7 @@ psi.tukey <- function(r, k=4.685){
 #'
 #' @return A vector of the same length as x which corresponds to the derivatives of the Tukey's loss function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -63,7 +63,7 @@ psi.tukey.derivative <- function(x, k = 4.685){
 #'
 #' @return A vector of the same length as x which corresponds to values obtained by the Tukey's loss function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -91,7 +91,7 @@ tukey.loss <- function(x, k = 4.685){
 #'
 #' @return A vector of the same length as r which corresponds to the Tukey's weight function.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' r <- seq(-2, 2, length=10)
@@ -113,7 +113,7 @@ psi.w <- function(r, k= 4.685){
 #'
 #' @return The Euclidean norm of the input vector.
 #'
-#' @author Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' x <- seq(-2, 2, length=10)
@@ -144,7 +144,7 @@ my.norm.2 <- function(x){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -277,7 +277,7 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -393,7 +393,7 @@ select.nknots.cl.am <- function(y, X, degree.spline=3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -541,7 +541,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -715,7 +715,7 @@ get_y_Z_X <- function(formula) {
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -817,7 +817,7 @@ plam.cl <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3){
 
   if(is.null(np.point)){
     object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
-                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, Z=Z.aux, X=X)
+                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, Z=Z.aux, X=X, formula=formula)
     class(object) <- c("plam.cl", "plam", "list")
     return(object)
   }else{
@@ -871,7 +871,7 @@ plam.cl <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3){
       }
     }
     object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, coeff.lin=coef.lin, coeff.const = alpha.hat, coeff.spl=coef.spl,
-                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, Z=Z.aux, X=X)
+                   nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion, y=y, Z=Z.aux, X=X, formula=formula)
     class(object) <- c("plam.cl", "plam", "list")
     return(object)
   }
@@ -915,7 +915,7 @@ plam.cl <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -1023,7 +1023,7 @@ plam.rob <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3, maxit
 
   if(is.null(np.point)){
     object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
-                   coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X, Z=Z.aux)
+                   coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, y=y, X=X, Z=Z.aux, formula=formula)
     class(object) <- c("plam.rob", "plam", "list")
     return(object)
   }else{
@@ -1076,7 +1076,7 @@ plam.rob <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3, maxit
     }
     object <- list(fitted.values=regresion.hat, g.matrix=gs.hat, sigma.hat=sigma.hat, coeff.lin=coef.lin, coeff.const=alpha.hat,
                    coeff.spl=coef.spl, nknots=nknots, Xspline=Xspline, nMat=nMat, nbasis=nbasis, kj=kj, np.prediction=prediccion,
-                   y=y, X=X, Z=Z.aux)
+                   y=y, X=X, Z=Z.aux, formula=formula)
     class(object) <- c("plam.rob", "plam", "list")
     return(object)
   }
@@ -1109,7 +1109,7 @@ plam.rob <- function(formula, np.point=NULL, nknots=NULL, degree.spline=3, maxit
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -1273,7 +1273,7 @@ am.cl <- function(y, X, np.point=NULL, nknots=NULL, degree.spline=3){
 #' @references
 #' Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 #'
-#' @author Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -1450,7 +1450,7 @@ pos.est <- function(y, sigma.hat, typePhi, ini=NULL, epsilon=1e-6, iter.max=10){
 #'
 #' @return A vector of residuals.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 residuals.plam <- function(object, ...){
@@ -1468,7 +1468,7 @@ residuals.plam <- function(object, ...){
 #'
 #' @return A vector of residuals.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 residuals.am <- function(object, ...){
@@ -1485,7 +1485,7 @@ residuals.am <- function(object, ...){
 #'
 #' @return A vector of fitted values.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 predict.plam <- function(object, ...){
@@ -1502,7 +1502,7 @@ predict.plam <- function(object, ...){
 #'
 #' @return A vector of fitted values.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 predict.am <- function(object, ...){
@@ -1520,7 +1520,7 @@ predict.am <- function(object, ...){
 #'
 #' @return A vector of fitted values.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 fitted.values.plam <- function(object,...){
@@ -1542,7 +1542,7 @@ fitted.plam <- function(object,...){
 #'
 #' @return A vector of fitted values.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @export
 fitted.values.am <- function(object,...){
@@ -1564,7 +1564,7 @@ fitted.am <- function(object,...){
 #' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
 #' @param ... additional other arguments.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -1650,7 +1650,7 @@ plot.plam <- function(x, which=1:(q+p), ask=FALSE,...){
 #' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
 #' @param ... additional other arguments.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
 #' set.seed(11)
@@ -1706,7 +1706,7 @@ plot.am <- function(x, which=1:p, ask=FALSE,...){
 #'
 #' @return A multiple R-squared value.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @importFrom stats residuals
 #' @export
@@ -1731,7 +1731,7 @@ R2 <- function(object,...){
 #'
 #' @return A robust multiple R-squared value.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @importFrom stats residuals
 #' @export
@@ -1764,7 +1764,7 @@ R2.rob <- function(object,...){
 #' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
 #' @param ... additional other arguments.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @importFrom stats residuals
 #' @export
@@ -1806,7 +1806,7 @@ summary.plam.rob <- function(object,...){
 #' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
 #' @param ... additional other arguments.
 #'
-#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 #'
 #' @importFrom stats residuals
 #' @export
@@ -1836,4 +1836,112 @@ summary.am.rob <- function(object,...){
   summary(res)
 }
 
+
+#' Deviance for objects of class \code{plam}
+#'
+#' This function returns the deviance of the fitted partially linear additive model as computed with \code{\link{plam.cl}} or
+#' \code{\link{plam.rob}}.
+#'
+#' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A real number.
+#'
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+#'
+#' @export
+deviance.plam <- function(object, ...){
+  NextMethod()
+}
+
+#' @export
+deviance.plam.cl <- function(object, ...){
+  return( sum( (residuals(object))^2) )
+}
+
+#' @export
+deviance.plam.rob <- function(object, ...){
+  yp <- object$y
+  y <- yp[ tmp<-!is.na(yp) ]
+  n <- length(y)
+  S2 <- 0
+  res <- residuals(object)
+  sigma.hat <- object$sigma.hat
+  for(i in 1:n){
+    S2 <- S2 + tukey.loss(res[i]/sigma.hat)
+  }
+  return( S2 )
+}
+
+
+#' Deviance for objects of class \code{am}
+#'
+#' This function returns the deviance of the fitted additive model as computed with \code{\link{am.cl}} or
+#' \code{\link{am.rob}}.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A real number.
+#'
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+#'
+#' @export
+deviance.am <- function(object, ...){
+  NextMethod()
+}
+
+#' @export
+deviance.am.cl <- function(object, ...){
+  return( sum( (residuals(object))^2) )
+}
+
+#' @export
+deviance.am.rob <- function(object, ...){
+  yp <- object$y
+  y <- yp[ tmp<-!is.na(yp) ]
+  n <- length(y)
+  S2 <- 0
+  res <- residuals(object)
+  sigma.hat <- object$sigma.hat
+  for(i in 1:n){
+    S2 <- S2 + tukey.loss(res[i]/sigma.hat)
+  }
+  return( S2 )
+}
+
+#' Partially linear additive model formula
+#'
+#' Description of the partially linear additive model formula extracted from an object of class \code{plam}.
+#'
+#' @param x an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A model formula.
+#'
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+#'
+#' @export
+formula.plam <- function(x, ...){
+  return(x$formula )
+}
+
+
+
+#' Print a Partially Linear Additive Model
+#'
+#' The default print method for a \code{plam} object.
+#'
+#' @param x an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A real number.
+#'
+#' @author Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
+#'
+#' @export
+print.plam <- function(x, ...){
+  cat("Formula:\n")
+  print(x$formula)
+}
 

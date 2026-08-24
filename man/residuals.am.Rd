@@ -19,5 +19,5 @@ This function returns the residuals of the fitted additive model using the class
 or robust estimators, as computed with \code{\link{am.cl}} or \code{\link{am.rob}}.
 }
 \author{
-Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+Alejandra Mercedes Martinez \email{ale_m_martinez@hotmail.com}
 }

@@ -23,5 +23,5 @@ psi.tukey.derivative(x)
 
 }
 \author{
-Alejandra Mercedes Martinez, \email{ammartinez@conicet.gov.ar}
+Alejandra Mercedes Martinez, \email{ale_m_martinez@hotmail.com}
 }

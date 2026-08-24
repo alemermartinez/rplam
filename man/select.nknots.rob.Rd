@@ -47,5 +47,5 @@ sal <- select.nknots.rob(y, Z, X)
 Boente G. and Martinez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 178, 107611.
 }
 \author{
-Alejandra Martinez, \email{ammartinez@conicet.gov.ar}
+Alejandra Martinez, \email{ale_m_martinez@hotmail.com}
 }
