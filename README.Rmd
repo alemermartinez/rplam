@@ -7,7 +7,11 @@ output:
     variant: markdown_github
 ---
 
-The following real data example of the implementation of robust estimators based on B-splines under partially linear additive model is part of a work in progress done in collaboration with Prof. Dr. Graciela Boente.
+This repository contains an <code>R</code> package implementing classical and robust estimators based on B-spline approximations for estimation in partially linear additive models (PLAMs), following the proposal of Graciela Boente and Alejandra Martínez in
+
+> Boente G. and Martínez A. (2023). A robust spline approach in partially linear additive models. Computational Statistics and Data Analysis, 34, 201.
+
+The following example illustrates the implementation of the <code>rplam</code> package on a real dataset. To visualize the behavior of the proposal under simulated scenarios and additional real datasets, see Boente and Martínez (2023).
 
 Let first install package <code>rplam</code>.
 
@@ -34,15 +38,16 @@ degree.spline <- 3
 
 Classical estimation of a partially linear additive model
 ```{r plam.cl}
-fit.full.cl <- plam.cl(y,Z,X,degree.spline=degree.spline)
+fit.full.cl <- plam.cl(y ~ Z + a(X), degree.spline=degree.spline)
 ```
 and the robust proposal
 ```{r semilla, echo=FALSE}
 set.seed(111)
 ```
 ```{r plam.rob, warning=FALSE}
-fit.rob <- plam.rob(y,Z,X,degree.spline=degree.spline)
+fit.rob <- plam.rob( y ~ Z + a(X), degree.spline=degree.spline)
 ```
+Note that the linear component <code>Z</code> enters the formula directly, while the matrix <code>X</code>, corresponding to the additive component, is included through the notation <code>a(X)</code>. Here, <code>a</code> is used only as a notation to identify the additive component and does not need to be defined as a function.
 
 The number of terms for the approximation of the additive functions selected by the BIC criteria used for the classical approach is
 ```{r number of terms classical}
