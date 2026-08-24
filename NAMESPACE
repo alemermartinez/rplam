@@ -8,6 +8,8 @@ S3method(predict,am)
 S3method(predict,plam)
 S3method(residuals,am)
 S3method(residuals,plam)
+export(R2)
+export(R2.rob)
 export(am.cl)
 export(am.rob)
 export(fitted.values.am)
@@ -28,6 +30,7 @@ importFrom(fda,
   getbasismatrix
 )
 importFrom(graphics,
+  abline,
   lines,
   par
 )
