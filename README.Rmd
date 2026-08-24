@@ -143,7 +143,7 @@ y.del <- y[-outliers]
 X.del <- X[-outliers,]
 Z.del <- as.matrix(Z[-outliers,])
 
-fit.del.cl <- plam.cl(y.del, Z.del, X.del)
+fit.del.cl <- plam.cl(y.del ~ Z.del + a(X.del))
 ```
 The same number of terms for the approximations were selected:
 ```{r kj classical new}
