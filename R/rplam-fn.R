@@ -1708,12 +1708,13 @@ plot.am <- function(x, which=1:p, ask=FALSE,...){
 #'
 #' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
 #'
+#' @importFrom stats residuals
 #' @export
 R2 <- function(object,...){
   y <- object$y
   y <- y[ tmp<-!is.na(y) ]
   n <- length(y)
-  res <- object$y - object$fitted.values
+  res <- residuals(object)
   S02 <- sum((y-mean(y))^2)
   S2 <- sum(res^2)
   R2 <- (S02-S2)/S02
@@ -1732,6 +1733,7 @@ R2 <- function(object,...){
 #'
 #' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
 #'
+#' @importFrom stats residuals
 #' @export
 R2.rob <- function(object,...){
   y <- object$y
@@ -1739,7 +1741,7 @@ R2.rob <- function(object,...){
   n <- length(y)
   S02 <- 0
   S2 <- 0
-  res <- object$y - object$fitted.values
+  res <- residuals(object)
   sigma.hat <- object$sigma.hat
   pos <- pos.est(y,ini=NULL,sigma.hat, epsilon=1e-6, iter.max=50,typePhi='Tukey')
 
@@ -1751,4 +1753,87 @@ R2.rob <- function(object,...){
   R2.rob <- (S02-S2)/S02
   return(R2.rob)
 }
+
+
+#' Summary for partially linear additive models fits
+#'
+#' Summary method for class \code{plam}.
+#'
+#' This function returns the estimation of the intercept, the linear regression coefficients and also the five-number summary and the mean of the residuals for both classical and robust estimators. For the robust estimator it also returns the estimate of the residual standard error.
+#'
+#' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
+#' @param ... additional other arguments.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @importFrom stats residuals
+#' @export
+#' @aliases summary.plam summary.plam.cl summary.plam.rob
+summary.plam <- function(object,...){
+  NextMethod()
+}
+
+
+#' @export
+summary.plam.cl <- function(object,...){
+  message("Estimate of the intercept: ", round(object$coeff.const,5))
+  message("Estimate of the linear regression coefficients: ", round(object$coeff.lin,5))
+  message("Multiple R-squared: ", round(R2(object),5))
+  res <- residuals(object)
+  message("Residuals:")
+  summary(res)
+}
+
+
+#' @export
+summary.plam.rob <- function(object,...){
+  message("Estimate of the intercept: ", round(object$coeff.const,5))
+  message("Estimate of the linear regression coefficients: ", round(object$coeff.lin,5))
+  message("Estimate of the residual standard error: ", round(object$sigma,5))
+  message("Robust multiple R-squared: ", round(R2.rob(object),5))
+  res <- residuals(object)
+  message("Residuals:")
+  summary(res)
+}
+
+
+#' Summary for additive models fits
+#'
+#' Summary method for class \code{am}.
+#'
+#' This function returns the estimation of the intercept and also the five-number summary and the mean of the residuals for both classical and robust estimators. For the robust estimator it also returns the estimate of the residual standard error.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
+#' @param ... additional other arguments.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @importFrom stats residuals
+#' @export
+#' @aliases summary.am summary.am.cl summary.am.rob
+summary.am <- function(object,...){
+  NextMethod()
+}
+
+
+#' @export
+summary.am.cl <- function(object,...){
+  message("Estimate of the intercept: ", round(object$coeff.const,5))
+  message("Multiple R-squared: ", round(R2(object),5))
+  res <- residuals(object)
+  message("Residuals:")
+  summary(res)
+}
+
+
+#' @export
+summary.am.rob <- function(object,...){
+  message("Estimate of the intercept: ", round(object$coeff.const,5))
+  message("Estimate of the residual standard error: ", round(object$sigma,5))
+  message("Robust multiple R-squared: ", round(R2.rob(object),5))
+  res <- residuals(object)
+  message("Residuals:")
+  summary(res)
+}
+
 

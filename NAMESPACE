@@ -8,6 +8,12 @@ S3method(predict,am)
 S3method(predict,plam)
 S3method(residuals,am)
 S3method(residuals,plam)
+S3method(summary,am)
+S3method(summary,am.cl)
+S3method(summary,am.rob)
+S3method(summary,plam)
+S3method(summary,plam.cl)
+S3method(summary,plam.rob)
 export(R2)
 export(R2.rob)
 export(am.cl)
@@ -41,6 +47,7 @@ importFrom(robustbase,
 importFrom(splines,bs)
 importFrom(stats,
   lm,
-  median
+  median,
+  residuals
 )
 useDynLib(rplam, .registration = TRUE)
