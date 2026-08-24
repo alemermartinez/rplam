@@ -1579,36 +1579,63 @@ fitted.am <- function(object,...){
 #' Z <- cbind(z1,z2)
 #' X <- cbind(x1,x2)
 #' fit.rob <- plam.rob(y ~ Z + a(X))
-#' plot(fit.rob, which=1)
+#' plot(fit.rob, which=3)
 #'
-#' @importFrom graphics lines par
+#' @importFrom graphics lines par abline
 #' @export
-plot.plam <- function(x, which=1:p, ask=FALSE,...){
+plot.plam <- function(x, which=1:(q+p), ask=FALSE,...){
   object <- x
+  Z <- object$Z
+  q <- dim(Z)[2]
   X <- object$X
   p <- dim(X)[2]
+  ZX <- cbind(Z,X)
   opar <- par(ask=ask)
   on.exit(par(opar))
-  these <- rep(FALSE, p)
+  these <- rep(FALSE, q+p)
   these[ which ] <- TRUE
-  for(i in 1:p) {
+  for(i in 1:(q+p)) {
     if(these[i]) {
-      ord <- order(X[,i])
-      if (is.null(colnames(X)) ){
-        x_name <- bquote(paste('x')[.(i)])
+      ord <- order(ZX[,i])
+      if (is.null(colnames(ZX)) ){
+        if(i<= q){
+          x_name <- bquote(paste('z')[.(i)])
+        }else{
+          x_name <- bquote(paste('x')[.(i-q)])
+        }
       } else {
-        x_name <- colnames(X)[i]
-      }
-      y_name <- bquote(paste(hat('g')[.(i)]))
-      if(p==2){
-        res <- object$y - as.numeric(object$g.matrix[,-i, drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
-      }else{
-        res <- object$y - rowSums(object$g.matrix[,-i, drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
+        x_name <- colnames(ZX)[i]
       }
 
-      lim_cl <- c(min(res), max(res))
-      plot(X[,i], res, pch=20,col='gray45',main="",xlab=x_name,ylab=y_name, ylim=lim_cl,cex.lab=0.8)
-      lines(X[ord,i],object$g.matrix[ord,i],lwd=3)
+      if(i <=q ){
+        y_name <- bquote(paste(hat(beta)[.(i)]))
+        if(q==2){
+          res <- object$y - rowSums(object$g.matrix[,, drop=FALSE])- (object$Z)[,-i]*(object$coeff.lin[-i]) - object$coeff.const
+        }else{
+          if(q==1){
+            res <- object$y - rowSums(object$g.matrix[,, drop=FALSE])- object$coeff.const
+          }else{
+            res <- object$y - rowSums(object$g.matrix[,, drop=FALSE])- (object$Z)[,-i]%*%(object$coeff.lin[-i]) - object$coeff.const
+          }
+        }
+        lim_cl <- c(min(res), max(res))
+        plot(ZX[,i], res, pch=20,col='gray45',main="",xlab=x_name,ylab=y_name, ylim=lim_cl,cex.lab=0.8)
+        abline(a=0, b=object$coeff.lin[i], lwd=3)
+      }else{
+        y_name <- bquote(paste(hat('g')[.(i-q)]))
+        if(p==2){
+          res <- object$y - as.numeric(object$g.matrix[,-(i-q), drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
+        }else{
+          if(p==1){
+            res <- object$y - (object$Z)%*%(object$coeff.lin) - object$coeff.const
+          }else{
+            res <- object$y - rowSums(object$g.matrix[,-(i-q), drop=FALSE])- (object$Z)%*%(object$coeff.lin) - object$coeff.const
+          }
+        }
+        lim_cl <- c(min(res), max(res))
+        plot(ZX[,i], res, pch=20,col='gray45',main="",xlab=x_name,ylab=y_name, ylim=lim_cl,cex.lab=0.8)
+        lines(ZX[ord,i],object$g.matrix[ord,i-q],lwd=3)
+      }
     }
   }
 }
@@ -1667,5 +1694,61 @@ plot.am <- function(x, which=1:p, ask=FALSE,...){
       lines(X[ord,i],object$g.matrix[ord,i],lwd=3)
     }
   }
+}
+
+
+#' Multiple R-squared
+#'
+#' This function returns the multiple R-squared.
+#'
+#' @param object an object of class \code{am}, a result of a call to \code{am.cl} or \code{am.rob}, or class \code{plam}, a result of a call to \code{plam.cl} or \code{plam.rob}
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A multiple R-squared value.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+R2 <- function(object,...){
+  y <- object$y
+  y <- y[ tmp<-!is.na(y) ]
+  n <- length(y)
+  res <- object$y - object$fitted.values
+  S02 <- sum((y-mean(y))^2)
+  S2 <- sum(res^2)
+  R2 <- (S02-S2)/S02
+  return(R2)
+}
+
+
+#' Robust multiple R-squared
+#'
+#' This function returns the multiple R-squared.
+#'
+#' @param object an object of class \code{am.rob} or \code{plam.rob}
+#' @param ... additional other arguments. Currently ignored.
+#'
+#' @return A robust multiple R-squared value.
+#'
+#' @author Alejandra Mercedes Martinez \email{ammartinez@conicet.gov.ar}
+#'
+#' @export
+R2.rob <- function(object,...){
+  y <- object$y
+  y <- y[ tmp<-!is.na(y) ]
+  n <- length(y)
+  S02 <- 0
+  S2 <- 0
+  res <- object$y - object$fitted.values
+  sigma.hat <- object$sigma.hat
+  pos <- pos.est(y,ini=NULL,sigma.hat, epsilon=1e-6, iter.max=50,typePhi='Tukey')
+
+  for(i in 1:n){
+    S02 <- S02 + tukey.loss((y[i]-pos)/sigma.hat)
+    S2 <- S2 + tukey.loss(res[i]/sigma.hat)
+  }
+
+  R2.rob <- (S02-S2)/S02
+  return(R2.rob)
 }
 

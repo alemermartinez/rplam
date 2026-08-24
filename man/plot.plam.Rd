@@ -4,7 +4,7 @@
 \alias{plot.plam}
 \title{Diagnostic plots for objects of class \code{plam}}
 \usage{
-\method{plot}{plam}(x, which = 1:p, ask = FALSE, ...)
+\method{plot}{plam}(x, which = 1:(q + p), ask = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.}
@@ -31,7 +31,7 @@ y <- regre + err
 Z <- cbind(z1,z2)
 X <- cbind(x1,x2)
 fit.rob <- plam.rob(y ~ Z + a(X))
-plot(fit.rob, which=1)
+plot(fit.rob, which=3)
 
 }
 \author{
