@@ -670,18 +670,6 @@ get_y_Z_X <- function(formula) {
     logical(1)
   )
 
-  if (!any(a_terms)) {
-    stop("The formula must contain an additive component of the form a(X).")
-  }
-
-  if (sum(a_terms) > 1) {
-    stop("The formula must contain only one additive component of the form a(X).")
-  }
-
-  if (sum(!a_terms) != 1) {
-    stop("The formula must contain one linear component Z.")
-  }
-
   X_expr <- terms[a_terms][[1]][[2]]
   Z_expr <- terms[!a_terms][[1]]
 
