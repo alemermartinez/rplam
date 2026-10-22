@@ -167,7 +167,7 @@ select.nknots.cl <- function(y, Z, X, degree.spline = 3){
 
   r <- degree.spline-1
   if(r<1){
-    cat("Assumption 1<=r not fulfilled")
+    warning("Assumption 1 <= r not fulfilled.")
   }
 
   if(is.factor(Z)){
@@ -298,7 +298,7 @@ select.nknots.cl.am <- function(y, X, degree.spline=3){
 
   r <- degree.spline-1
   if(r<1){
-    cat("Assumption 1<=r not fulfilled")
+    warning("Assumption 1 <= r not fulfilled.")
   }
 
   lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2, degree.spline+1))
@@ -414,7 +414,7 @@ select.nknots.rob <- function(y, Z, X, degree.spline = 3, maxit = 100){
 
   r <- degree.spline-1
   if(r<1){
-    cat("Assumption 1<=r not fulfilled")
+    warning("Assumption 1 <= r not fulfilled.")
   }
   n <- length(y)
   d <- dim(X)[2]
@@ -563,7 +563,7 @@ select.nknots.rob.am <- function(y, X, degree.spline = 3, maxit = 100){
 
   r <- degree.spline-1
   if(r<1){
-    cat("Assumption 1<=r not fulfilled")
+    warning("Assumption 1 <= r not fulfilled.")
   }
 
   lim.inf.kj <- ceiling(max(n^(1/(2*r+1))/2, degree.spline+1))
@@ -1944,7 +1944,7 @@ formula.plam <- function(x, ...){
 #' @param x an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
 #' @param ... additional other arguments. Currently ignored.
 #'
-#' @return A real number.
+#' @return The function prints the model formula and returns \code{x} invisibly.
 #'
 #' @author Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 #'
@@ -1952,5 +1952,5 @@ formula.plam <- function(x, ...){
 print.plam <- function(x, ...){
   cat("Formula:\n")
   print(x$formula)
+  invisible(x)
 }
-
