@@ -12,7 +12,7 @@
 \item{...}{additional other arguments. Currently ignored.}
 }
 \value{
-A real number.
+The function prints the model formula and returns \code{x} invisibly.
 }
 \description{
 The default print method for a \code{plam} object.
