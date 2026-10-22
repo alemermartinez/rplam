@@ -1563,6 +1563,8 @@ fitted.am <- function(object,...){
 #' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
 #' @param ... additional other arguments.
 #'
+#' @return No return value. This function is called for its side effect of producing partial residual plots for the selected explanatory variables.
+#'
 #' @author Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 #'
 #' @examples
@@ -1648,6 +1650,8 @@ plot.plam <- function(x, which=1:(q+p), ask=FALSE,...){
 #' @param which vector of indices of explanatory variables for which partial residuals plots will be generated. Defaults to all available explanatory variables.
 #' @param ask logical value. If \code{TRUE}, the graphical device will prompt before going to the next page/screen of output.
 #' @param ... additional other arguments.
+#'
+#' @return No return value. This function is called for its side effect of producing partial residual plots for the selected explanatory variables.
 #'
 #' @author Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 #'
@@ -1763,6 +1767,9 @@ R2.rob <- function(object,...){
 #' @param object an object of class \code{plam}, a result of a call to \code{\link{plam.cl}} or \code{\link{plam.rob}}.
 #' @param ... additional other arguments.
 #'
+#' @return An object containing the summary of the residuals, as returned by \code{\link{summary}}. The function also displays the estimated
+#' intercept, the linear regression coefficients, and the coefficient of determination. For robust estimation, it additionally displays the estimated residual standard error.
+#'
 #' @author Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 #'
 #' @importFrom stats residuals
@@ -1804,6 +1811,9 @@ summary.plam.rob <- function(object,...){
 #'
 #' @param object an object of class \code{am}, a result of a call to \code{\link{am.cl}} or \code{\link{am.rob}}.
 #' @param ... additional other arguments.
+#'
+#' @return An object containing the summary of the residuals, as returned by \code{\link{summary}}. The function also displays the estimated
+#' intercept and the coefficient of determination. For robust estimation, it additionally displays the estimated residual standard error.
 #'
 #' @author Alejandra Mercedes Martínez \email{ale_m_martinez@hotmail.com}
 #'

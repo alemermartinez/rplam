@@ -13,6 +13,10 @@
 
 \item{...}{additional other arguments.}
 }
+\value{
+An object containing the summary of the residuals, as returned by \code{\link{summary}}. The function also displays the estimated
+intercept and the coefficient of determination. For robust estimation, it additionally displays the estimated residual standard error.
+}
 \description{
 Summary method for class \code{am}.
 }

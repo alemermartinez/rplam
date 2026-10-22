@@ -15,6 +15,9 @@
 
 \item{...}{additional other arguments.}
 }
+\value{
+No return value. This function is called for its side effect of producing partial residual plots for the selected explanatory variables.
+}
 \description{
 Plot method for class \code{plam}.
 }
