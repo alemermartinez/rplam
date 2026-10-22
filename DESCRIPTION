@@ -1,7 +1,7 @@
 Package: rplam
 Type: Package
 Title: Robust Estimators for Partially Linear Additive Models
-Version: 1.0.1
+Version: 1.0.2
 Authors@R:
     person(given = "Alejandra Mercedes",
        family = "Martínez",
